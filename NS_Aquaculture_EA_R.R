@@ -1,6 +1,6 @@
-#######################
-##   PEI EA Toolbox  ##
-#######################
+###########################
+##   NS Aquaculture EA   ##
+###########################
 
 require(dplyr)
 require(ggmap)
@@ -32,29 +32,70 @@ require(DT)
 #   p$lat <- as.numeric(gsub("\\)", "", p$lat))
 #   p
 # }
-##########################################################
+# 
+# ##########################################
+# ##  load in NS coastal island database  ##  #not needed
+# ##########################################
+# 
+# #path <- "C:/Users/englishm/Documents/"
+# 
+# ci.sf <- st_read(dsn = "C:/Users/englishm/Documents/Coastal Islands/NS_Coastal_Islands_Prioritization/Data/Coastal_Islands_DB_Design_FEB_20.gdb")
+# 
+# #ci.df <- as.data.frame(ci.sf)
+# 
+# ci.sf$centroids <- st_transform(ci.sf, 4326) %>% 
+#   st_centroid() %>% 
+#   st_geometry()
+# 
+# # 
+# # cents <- geom_split(ci.sf$centroids)
+# # 
+# # cents <- cents %>%
+# #   st_as_sf(coords = c("lon", "lat")) %>%
+# #   st_set_crs(4326)
+# # 
+# # ci.sf$lon_cent <- as.numeric(cents$lon)
+# # ci.sf$lat_cent <- as.numeric(cents$lat)
+# # 
+# # ci.df$lon_cent <- as.numeric(cents$lon)
+# # ci.df$lat_cent <- as.numeric(cents$lat)
+# # 
+# # # # check with
+# 
+# # 
+# # ci.point <- ci.df
+# # 
+# # ci.point$SHAPE <- NULL
+# # 
+# # ci.point <- ci.point %>%
+# #   st_as_sf(coords = c("lon_cent", "lat_cent")) %>%
+# #   st_set_crs(4326)
+# 
+# 
+# # #filter out a county - we want Yarmouth for Lobster bay
+# # ci.sub <- filter(ci.point, COUNTY == "Yarmouth")
+# 
+# #reproject so it works in Leaflet
+# ci.sub <- st_transform(ci.sf, 4326)
+# ci.sub <- st_zm(ci.sub, drop = T, what = "ZM")
+# 
+# #standardize the geonames (island names)
+# ci.sub$GEONAME <- str_standardize(ci.sub$GEONAME)
+# 
+# ci.sub <- ci.sub[order(ci.sub$GEONAME),]
+# 
+# unique(ci.sub$GEONAME)
 
-#setwd("C:/Users/englishm/Documents/Lobster Bay/app/")
 
 
 ######################################
-##   load in Study Site area data   ##  
+##   load in Study Site area data   ##
 ######################################
 
-#create polygon out of point coordinates and buffer:
-#
-#
-# #higgins shore #coastal block 415
-# 
+# #Create polygon from coordinate centroid
 # df <- data.frame(
-#   lat = 46.55459,
-#   lon = -64.10083
-# )
-# 
-# #cape edgmont #coastal block 414
-# df <- data.frame(
-#   lat = 46.453811,
-#   lon = -64.124255
+#   lat = 43.812487, 
+#   lon = -65.910547 
 # )
 # 
 # 
@@ -64,20 +105,20 @@ require(DT)
 # 
 # df.utm <- st_transform(df.sf, 32620) #CRS 32620 for this
 # 
-# #buffer by 100m for Higgins Shore or 150m for Cape Edgmont
-# df.150 <- st_buffer(df.utm, dist = 150)
+# #buffer by 1000m
+# df.1000 <- st_buffer(df.utm, dist = 1000)
 # 
 # #turn to polygon:
-# df.150 <- df.150 %>%
+# df.1000 <- df.1000 %>%
 #   summarise(geometry = st_combine(geometry)) %>%
 #   st_cast("POLYGON")
 # 
 # #transform back to lat/lon
-# df.150 <- st_transform(df.150, 4326) #CRS 4326 for this
+# study.site <- st_transform(df.1000, 4326) #CRS 4326 for this
 
 
-#Read in study site KML file 
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Victoria PE/Victoria.kml") # Most recent study site: Victoria PE
+#read in study site polygon
+study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2024/2024 Freeport NS/Freeport.kml")
 
 study.site <- st_transform(study.site, 4326)
 
@@ -94,11 +135,11 @@ atl <- st_zm(atl, drop = T, what = "ZM")
 atl <- st_make_valid(atl)
 
 
-#########################
-### Seaduck Key Sites  ##
-#########################
+##########################
+### Seaduck Key Sites   ##
+##########################
 
-sd <- st_read(dsn = "C:/Users/englishm/Documents/EA/seaDuckKeyHabitatSites_20220316.shp")
+sd <- st_read(dsn = "C:/Users/englishm/Documents/EA/Data/seaDuckKeyHabitatSites_20220316.shp")
 
 sd <- st_transform(sd, 4326)
 
@@ -117,19 +158,19 @@ sf_use_s2(FALSE) #turn off spherical geometry
 
 cw <- st_make_valid(cw)
 
+#find the coastal blocks that intersect with the study site
 cw.int <- st_intersection(cw, study.site)
+
 
 #read in coastal block data
 
-cw.data <- st_read(dsn = "Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Waterfowl/Coastal Survey Blocks/Coastal_survey_blocks_maxcounts/CoastalBlockMaxCount_Gulf.shp")
+cw.data <- st_read(dsn = "Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Waterfowl/Coastal Survey Blocks/Coastal_survey_blocks_maxcounts/CoastalBlockMaxCount_NS.shp")
 
-#filter the study area to the coastal blocks 
+#Filter coastal blocks by study site overlap
 cw.data <- filter(cw.data, BLOC %in% cw.int$BLOC)
 
-#cw.data.17 <- filter(cw.data, BLOC == 17)
 
-
-#write.csv(cw.data, "Coastal_Block_MalpequeBay.csv")
+#write.csv(cw.data., "Coastal_Block_StMarysBay.csv")
 
 
 ################################################
@@ -153,26 +194,44 @@ colonies <- colonies %>%
 #Filter to coastal block
 colonies.cw <- st_intersection(colonies, cw[cw$BLOC %in% cw.int$BLOC,])
 
+
+## Filter to study site if you need to
+# colonial.birds.study.site <- st_intersection(colonial.birds, study.site)
+
 #subset censuses based on coastal block
 censuses.cw <- filter(censuses,
                       ColonyId %in% unique(colonies.cw$colonyid))
 
 names(colonies.cw)[names(colonies.cw) == 'colonyid'] <- 'ColonyId'
 
+#order by ColonyId, then Species_code
+censuses.cw <- censuses.cw[
+  with(censuses.cw, order(ColonyId, Species_code)),
+]
 
-#try to make sense of the data:
+## Create some summary columns:
+## most_recent_year and max_size
 censuses.cw <- censuses.cw %>%
   group_by(ColonyId, Species_code) %>%
-  dplyr::mutate(most_recent_year = max(Census_Year),
-                max_size = max(Colony_size))
+  dplyr::mutate(most_recent_year = max(Census_Year, na.rm=T),
+                max_size = max(Colony_size, na.rm=T))
 
+## most_recent_year_count
 censuses.sum <- censuses.cw %>%
   group_by(ColonyId, Species_code) %>%
-  mutate(most_recent_year_count = ifelse(Census_Year == most_recent_year, Colony_size, NA),
-         max_count_year = ifelse(Colony_size == max_size, Census_Year, NA))
+  mutate(most_recent_year_count = ifelse(Census_Year == most_recent_year, Colony_size, NA)) %>%
+         fill(most_recent_year_count, .direction = 'downup')
+
+## max_count_year
+censuses.sum <- censuses.sum %>%
+  group_by(ColonyId, Species_code) %>%
+  mutate(max_count_year = ifelse(Colony_size == max_size, Census_Year, NA)) %>%
+  fill(max_count_year, .direction = 'downup')
+
 
 censuses.sum <- censuses.sum[order(censuses.sum$ColonyId),]
 
+#subset columns
 censuses.sum <- select(censuses.sum,
                        CensusId,
                        ColonyId,
@@ -185,15 +244,17 @@ censuses.sum <- select(censuses.sum,
                        max_count_year,
                        max_size)
 
+#join both tables by ColonyId
 censuses.sum <- left_join(colonies.cw, censuses.sum, by = "ColonyId")
 
+## write CSV
+#write.csv(censuses.sum, "CWS_Atlantic_Waterbird_Colonies_2025.csv", row.names = F)
 
 #################
 ##   CH DATA   ##
 #################
 
 ch <- st_read(dsn = "Q:/GW/EC1121SAR_EEP_Ops/ATL_CWS_SAR/Critical_Habitat/Regional_Flatten.gdb")
-
 
 ch <- st_transform(ch, 4326)
 
@@ -216,26 +277,10 @@ ch.study.site <- st_intersection(ch, cw[cw$BLOC %in% cw.int$BLOC,])
 
 
 ###############
-##   ACCDC   ##
+##  ACSS     ##
 ###############
 
-pe.accdc <- st_read("C:/Users/englishm/Documents/EA/Data/ACCDC/PE/ACCDC_PE_RARE_SENS_240609.gdb")
-
-#filter for species at risk (Special Concern, Vulnerable, Threatened, Endangered)
-pe.accdc <- filter(pe.accdc,
-                   NPROTSAR %in% c("SC", "V", "T", "E"))
-
-pe.accdc <- st_transform(pe.accdc, 4326)
-
-accdc.cw <- st_intersection(pe.accdc, cw[cw$BLOC %in% cw.int$BLOC,])
-
-
-##############
-##   ACSS   ##
-##############
-
 require(readxl)
-
 acss <- read_xlsx("Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Shorebirds/ACSS data 1971-2022 30_10_2023.xlsx", 1)
 
 
@@ -251,8 +296,9 @@ acss.sf <- acss %>%
            na.fail = F)
 
 
-acss.cw <- st_transform(cw[cw$BLOC %in% cw.int$BLOC,], "+proj=utm +zone=20 +datum=WGS84") #PEI is all UTM Zone 20
+acss.cw <- st_transform(cw[cw$BLOC %in% cw.int$BLOC,], "+proj=utm +zone=20 +datum=WGS84") ##Almost all of NS is zone 20. Zone 21 at the eastern edge of Cape Breton, Zone 19 near Brier Island / Yarmouth
 
+#lb.out <- st_cast(lb.out,"MULTILINESTRING")
 
 #make the 5000m buffer
 acss.cw.5000 <- st_buffer(acss.cw, dist = 5000)
@@ -261,26 +307,26 @@ acss.cw.5000 <- st_transform(acss.cw.5000, "+proj=longlat +datum=WGS84")
 
 acss.filter <- st_intersection(acss.sf, acss.cw.5000)
 
-acss.filter <- filter(acss.sf, surveysite %in% c("Victoria", "Victoria Bay"))
+#acss.filter <- filter(acss.sf, site_code %in% c("NECO"))
 
 range(as.numeric(acss.filter$obcount))
 
 unique(acss.filter$species)
 
 
-#write.csv(acss.sf, "Casumpec_Bay_ACSS_Data.csv")
+###############
+##   ACCDC   ##
+###############
 
+ns.accdc <- st_read("C:/Users/englishm/Documents/EA/Data/ACCDC/NS/ACCDC_NS_RARE_SENS_240609.gdb")
 
-#####################
-##   BBS Surveys   ##
-#####################
+ns.accdc <- filter(ns.accdc,
+                   NPROTSAR %in% c("SC", "V", "T", "E"))
 
-#PE surveys
-bbs.pe <- st_read("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Landbirds/Breeding Bird Survey_ATL/PE_Active BBS routes.gdb")
+ns.accdc <- st_transform(ns.accdc, 4326)
 
-bbs.pe <- st_transform(bbs.pe, 4326)
+accdc.cw <- st_intersection(ns.accdc, cw[cw$BLOC %in% cw.int$BLOC,])
 
-bbs.pe <- st_zm(bbs.pe, drop = T, what = "ZM")
 
 
 ###################
@@ -301,76 +347,73 @@ bago.cws <- st_intersection(bago.cws, cw[cw$BLOC %in% cw.int$BLOC,])
 bago.inc <- st_intersection(bago.inc, cw[cw$BLOC %in% cw.int$BLOC,])
 
 
+#write.csv(bago, "Maces_Bay_BAGO_data.csv")
+
 ########################
-##   Harlequin Data   ##  # No data for PE!
+##   Harlequin Data   ##
 ########################
-#
-#
-# hard <- read_xlsx("V:/Sackville/Wildlife/Databases/HADU_PUSA/Data/HADU_PUSA_Compilation_2024-10-04.xlsx", 2)
-# 
-# # #rename columns
-# # names(hard) <- c("survey_id", "year", "month", "day", "time", "waypoint_id", "latitude", "longitude", "province", "region", "location", "notes", "HARD_M", "HARD_F", "HARD_unkn", "species", "total")
-# 
-# 
-# #convert to a SF object
-# hard.sf <- st_as_sf(hard, 
-#                     coords = c("longitude", "latitude"), 
-#                     crs = 4326, 
-#                     agr = "constant", 
-#                     remove = FALSE,
-#                     na.fail = F)
-# 
-# hard.sf <- st_intersection(hard.sf, cw[cw$BLOC %in% cw.int$BLOC,])
-# 
-# 
-# #write.csv(hard.sf, "Harlequin_Duck_Purple_Sandpiper_Maces_Bay.csv")
+
+hard <- read_xlsx("C:/Users/englishm/Documents/Harlequins/HADU_PUSA_Compilation_2024-09-18.xlsx", 2)
+
+
+#convert to a SF object
+hard.sf <- st_as_sf(hard, 
+                    coords = c("longitude", "latitude"), 
+                    crs = 4326, 
+                    agr = "constant", 
+                    remove = FALSE)
+
+hard.sf <- st_intersection(hard.sf, cw[cw$BLOC %in% cw.int$BLOC,])
+
+
+#write.csv(hard.sf, "Harlequin_Duck_Purple_Sandpiper_Maces_Bay.csv")
 
 
 ######################
 ##   banding data   ##
 ######################
 
-# ns.enc <- read_csv(file = "C:/Users/englishm/Documents/EA/nsallenc2021.csv")
-# 
-# ns.enc <- set_standard_names(ns.enc)
-# 
-# #select useful columns since the original data contain 88
-# ns.enc <- select(ns.enc, 
-#                  b_day, 
-#                  b_month, 
-#                  b_year, 
-#                  b_region, 
-#                  b_country_code,
-#                  gisblat,
-#                  gisblong,
-#                  gisrlat,
-#                  gisrlong,
-#                  hunt_season_surv_,
-#                  how_obt,
-#                  vhow,
-#                  permit,
-#                  r_month,
-#                  r_region,
-#                  r_year,
-#                  sex,
-#                  vage,
-#                  state_name_80,
-#                  #state,
-#                  country_name_77)
-# 
-# str(ns.enc)
-# 
-# #create sf object
-# ns.enc.sf <- st_as_sf(ns.enc, 
-#                       coords = c("gisrlong", "gisrlat"), 
-#                       crs = 4326, 
-#                       agr = "constant", 
-#                       remove = FALSE,
-#                       na.fail = FALSE)
-# 
-# ns.enc.sf <- st_transform(ns.enc.sf, 4326)
-# 
-# ns.abo <- st_intersection(ns.enc.sf, aqua)
+ns.enc <- read_csv(file = "C:/Users/englishm/Documents/EA/nsallenc2021.csv")
+
+ns.enc <- set_standard_names(ns.enc)
+
+#select useful columns since the original data contain 88
+ns.enc <- select(ns.enc, 
+                 b_day, 
+                 b_month, 
+                 b_year, 
+                 b_region, 
+                 b_country_code,
+                 gisblat,
+                 gisblong,
+                 gisrlat,
+                 gisrlong,
+                 hunt_season_surv_,
+                 how_obt,
+                 vhow,
+                 permit,
+                 r_month,
+                 r_region,
+                 r_year,
+                 sex,
+                 vage,
+                 state_name_80,
+                 #state,
+                 country_name_77)
+
+str(ns.enc)
+
+#create sf object
+ns.enc.sf <- st_as_sf(ns.enc, 
+                      coords = c("gisrlong", "gisrlat"), 
+                      crs = 4326, 
+                      agr = "constant", 
+                      remove = FALSE,
+                      na.fail = FALSE)
+
+ns.enc.sf <- st_transform(ns.enc.sf, 4326)
+
+ns.abo <- st_intersection(ns.enc.sf, aqua)
 
 
 ###############################
@@ -446,43 +489,26 @@ server <- function(input, output, session) {
     addProviderTiles("Esri.WorldTopoMap", group = "TopoMap") %>%
     setView(-62.654, 49.373, zoom = 5) %>%                           #this sets where the map is first centered, so adjust as necessary.
     
-    addLayersControl(baseGroups = c("OceanBasemap","WorldImagery","TopoMap"),
+    addLayersControl(baseGroups = c("WorldImagery","TopoMap"),
                      position = "topleft",
                      options = layersControlOptions(collapsed = FALSE)) %>%
     
-    addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
+    addPolygons(data = study.site,
                 color = "grey",
+                fillOpacity = 0.15,
+                opacity = 1,
+                weight = 1,
+                #group = "Dataset",
+                popup = popupTable(study.site, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+    
+    addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
+                color = "red",
                 fillOpacity = 0.15,
                 opacity = 1,
                 weight = 1,
                 #group = "Dataset",
                 popup = popupTable(cw.int, zcol = c("BLOC", "NAME", "DESCRIPTIO"), row.numbers = F, feature.id = F)) %>%
     
-    
-    addPolygons(data = study.site,
-                color = "red",
-                fillOpacity = 0.15,
-                opacity = 1,
-                weight = 1) %>%
-                #group = "Dataset",
-                #popup = popupTable(df.300)) %>%
-    
-    addPolygons(data = ch.atl,
-                color = "blue",
-                fillOpacity = 0.15,
-                opacity = 1,
-                weight = 1,
-                #group = "Dataset",
-                popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
-    
-    addPolylines(data = bbs.pe,
-                 color = "red",
-                 fillOpacity = 0.15,
-                 opacity = 1,
-                 weight = 1,
-                 #group = "Dataset",
-                 popup = popupTable(bbs.pe, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
-
     
     addCircleMarkers(data = acss.filter,
                      #radius = ~log(coei$Total),
@@ -507,47 +533,44 @@ server <- function(input, output, session) {
                      #group = as.character(mydata.sf.m$Year),
                      popup = popupTable(accdc.cw, zcol = c("COMNAME", "SPROT", "OBDATE"), row.numbers = F, feature.id = F)) %>%
     
+    
+    
+  addCircleMarkers(data = hard.sf,
+                   #radius = ~log(coei$Total),
+                   lng = as.numeric(hard.sf$longitude),
+                   lat = as.numeric(hard.sf$latitude),
+                   fillOpacity = 0.6,
+                   # fillColor = ~pal(Year), #this calls the colour palette we created above
+                   color = "grey",
+                   weight = 1,
+                   #group = as.character(mydata.sf.m$Year),
+                   popup = popupTable(hard.sf, zcol = c("HADU_total", "PUSA", "year"), row.numbers = F, feature.id = F)) %>%
 
-    addCircleMarkers(data = bago.inc,
-                     #radius = ~log(coei$Total),
-                     lng = bago.inc$long_,
-                     lat = bago.inc$lat,
-                     fillOpacity = 0.6,
-                     # fillColor = ~pal(Year), #this calls the colour palette we created above
-                     color = "black",
-                     weight = 1,
-                     #group = as.character(mydata.sf.m$Year),
-                     popup = popupTable(bago.inc, zcol = c("Location", "Total", "Survey_Type"), row.numbers = F, feature.id = F)) %>%
-    
-    
-    addCircleMarkers(data = bago.cws,
-                     #radius = ~log(coei$Total),
-                     lng = bago.cws$long,
-                     lat = bago.cws$lat,
-                     fillOpacity = 0.6,
-                     # fillColor = ~pal(Year), #this calls the colour palette we created above
-                     color = "black",
-                     weight = 1,
-                     #group = as.character(mydata.sf.m$Year),
-                     popup = popupTable(bago.cws, zcol = c("Year", "Total"), row.numbers = F, feature.id = F)) %>%
-    
+  addCircleMarkers(data = bago.inc,
+                   #radius = ~log(coei$Total),
+                   lng = bago.inc$long_,
+                   lat = bago.inc$lat,
+                   fillOpacity = 0.6,
+                   # fillColor = ~pal(Year), #this calls the colour palette we created above
+                   color = "black",
+                   weight = 1,
+                   #group = as.character(mydata.sf.m$Year),
+                   popup = popupTable(bago.inc, zcol = c("Location", "Total", "Year_"), row.numbers = F, feature.id = F)) %>%
 
-
-    addCircleMarkers(data = censuses.sum,
-                     #radius = ~log(coei$Total),
-                     lng = censuses.sum$londec,
-                     lat = censuses.sum$latdec,
-                     fillOpacity = 0.6,
-                     radius = 3,
-                     # fillColor = ~pal(Year), #this calls the colour palette we created above
-                     color = "blue",
-                     weight = 1,
-                     #group = as.character(mydata.sf.m$Year),
-                     popup = popupTable(censuses.sum, zcol = c( "Census_Year", "Species_code", "most_recent_year", "most_recent_year_count", "max_count_year", "max_size"), row.numbers = F, feature.id = F)) %>%
+  
+  addCircleMarkers(data = censuses.sum,
+                   #radius = ~log(coei$Total),
+                   lng = censuses.sum$londec,
+                   lat = censuses.sum$latdec,
+                   fillOpacity = 0.6,
+                   radius = 3,
+                   # fillColor = ~pal(Year), #this calls the colour palette we created above
+                   color = "blue",
+                   weight = 1,
+                   #group = as.character(mydata.sf.m$Year),
+                   popup = popupTable(censuses.sum, zcol = c("colony_name", "most_recent_year", "most_recent_year_count", "max_size"), row.numbers = F, feature.id = F)) %>%
     
     
-    
-    # 
     # addPolygons(data = sd,
     #             color = "blue",
     #             fillOpacity = 0.15,
@@ -557,18 +580,36 @@ server <- function(input, output, session) {
     #             popup = popupTable(sd, zcol = c("label", "region"), row.numbers = F, feature.id = F)) %>%
     # 
     
-  
+  # addPolylines(data = bbs.ns,
+  #              color = "pink",
+  #              fillOpacity = 0.15,
+  #              opacity = 1,
+  #              weight = 2,
+  #              #group = "Dataset",
+  #              popup = popupTable(bbs.ns, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+  #   
+    
+    addPolygons(data = ch.atl,
+                color = "blue",
+                fillOpacity = 0.15,
+                opacity = 1,
+                weight = 1,
+                #group = "Dataset",
+                popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+    
+    
+    
     addDrawToolbar(targetGroup='Selected',
-                   polylineOptions=FALSE,
+                   polylineOptions = FALSE,
                    markerOptions = FALSE,
                    circleOptions = FALSE,
                    circleMarkerOptions = FALSE,
-                   polygonOptions = drawPolygonOptions(shapeOptions=drawShapeOptions(fillOpacity = 0.2,
-                                                                                     color = 'blue',
-                                                                                     weight = 3)),
-                   rectangleOptions = drawRectangleOptions(shapeOptions=drawShapeOptions(fillOpacity = 0.2,
-                                                                                         color = 'blue',
-                                                                                         weight = 3)),
+                   polygonOptions = drawPolygonOptions(shapeOptions = drawShapeOptions(fillOpacity = 0.2,
+                                                                                       color = 'blue',
+                                                                                       weight = 3)),
+                   rectangleOptions = drawRectangleOptions(shapeOptions = drawShapeOptions(fillOpacity = 0.2,
+                                                                                           color = 'blue',
+                                                                                           weight = 3)),
                    editOptions = editToolbarOptions(edit = FALSE, selectedPathOptions = selectedPathOptions()))
   
   edits <- callModule(editMod, "mymap", leafmap = lf)
