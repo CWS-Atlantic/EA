@@ -72,12 +72,21 @@ require(DT)
 # study.site <- df.3000
 
 
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Strait Shores NB/StraitShores.kml")
+study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Salmon River NB/SalmonRiverWind.kml")
 
 study.site <- st_transform(study.site, 4326)
 
 #drop the 3D field from the google earth shapefile
 study.site <- st_zm(study.site, drop = T, what = "ZM")
+
+
+atl <- st_read(dsn = "C:/Users/englishm/Documents/EA/Data/Atlantic_Region.kml")
+
+atl <- st_transform(atl, 4326)
+
+atl <- st_zm(atl, drop = T, what = "ZM")
+
+atl <- st_make_valid(atl)
 
 
 #################
@@ -243,6 +252,25 @@ censuses.sum <- left_join(colonies.cw, censuses.sum, by = "ColonyId")
 
 ## write CSV
 #write.csv(censuses.sum, "CWS_Atlantic_Waterbird_Colonies_2025.csv", row.names = F)
+
+
+###############
+##   ACCDC   ##
+###############
+
+nb.accdc <- st_read("C:/Users/englishm/Documents/EA/Data/ACCDC/NB/ACCDC_NB_RARE_SENS_240609.gdb")
+
+#filter for species at risk (Special Concern, Vulnerable, Threatened, Endangered)
+nb.accdc <- filter(nb.accdc,
+                   NPROTSAR %in% c("SC", "V", "T", "E"))
+
+nb.accdc <- st_transform(nb.accdc, 4326)
+
+#accdc.cw <- st_intersection(nb.accdc, cw[cw$BLOC %in% cw.int$BLOC,])
+
+accdc.cw <- st_intersection(nb.accdc, study.site)
+
+unique(accdc.cw$COMNAME)
 
 
 ############
@@ -418,30 +446,30 @@ server <- function(input, output, session) {
                      options = layersControlOptions(collapsed = FALSE)) %>%
     
     
-    # addPolygons(data = ch,
-    #             color = "blue",
-    #             fillOpacity = 0.15,
-    #             opacity = 1,
-    #             weight = 1,
-    #             #group = "Dataset",
-    #             popup = popupTable(ch, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
-    # 
-    addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
-                color = "grey",
+    addPolygons(data = ch.atl,
+                color = "blue",
                 fillOpacity = 0.15,
                 opacity = 1,
                 weight = 1,
                 #group = "Dataset",
-                popup = popupTable(cw.int, zcol = c("BLOC", "NAME", "DESCRIPTIO"), row.numbers = F, feature.id = F)) %>%
+                popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+
+    # addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
+    #             color = "grey",
+    #             fillOpacity = 0.15,
+    #             opacity = 1,
+    #             weight = 1,
+    #             #group = "Dataset",
+    #             popup = popupTable(cw.int, zcol = c("BLOC", "NAME", "DESCRIPTIO"), row.numbers = F, feature.id = F)) %>%
 
     
-  addPolygons(data = study.site,
-              color = "grey",
-              fillOpacity = 0.25,
-              opacity = 1,
-              weight = 1) %>% #,
-    #group = "Dataset",
-    #popup = popupTable(mb, zcol = c("Area_ha"), row.numbers = F, feature.id = F)) %>%
+    addPolygons(data = study.site,
+                color = "grey",
+                fillOpacity = 0.25,
+                opacity = 1,
+                weight = 1) %>% #,
+               #group = "Dataset",
+               #popup = popupTable(mb, zcol = c("Area_ha"), row.numbers = F, feature.id = F)) %>%
     
     addPolygons(data = ews.nb,
                 color = "purple",
@@ -460,25 +488,37 @@ server <- function(input, output, session) {
                 popup = popupTable(nb.ag, zcol = c("LABEL"), row.numbers = F, feature.id = F)) %>%
     
     
-  addPolylines(data = bbs.nb,
-               color = "red",
-               fillOpacity = 0.15,
-               opacity = 1,
-               weight = 1,
-               #group = "Dataset",
-               popup = popupTable(bbs.nb, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+    addPolylines(data = bbs.nb,
+                 color = "red",
+                 fillOpacity = 0.15,
+                 opacity = 1,
+                 weight = 1,
+                 #group = "Dataset",
+                 popup = popupTable(bbs.nb, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
     
-  addCircleMarkers(data = censuses.sum,
-                   #radius = ~log(coei$Total),
-                   lng = censuses.sum$londec,
-                   lat = censuses.sum$latdec,
-                   fillOpacity = 0.6,
-                   radius = 3,
-                   # fillColor = ~pal(Year), #this calls the colour palette we created above
-                   color = "blue",
-                   weight = 1,
-                   #group = as.character(mydata.sf.m$Year),
-                   popup = popupTable(censuses.sum, zcol = c("colony_name", "most_recent_year", "most_recent_year_count", "max_size"), row.numbers = F, feature.id = F)) %>%
+    addCircleMarkers(data = accdc.cw,
+                     #radius = ~log(coei$Total),
+                     lng = accdc.cw$LONDEC,
+                     lat = accdc.cw$LATDEC,
+                     fillOpacity = 0.6,
+                     # fillColor = ~pal(Year), #this calls the colour palette we created above
+                     color = "yellow",
+                     weight = 1,
+                     #group = as.character(mydata.sf.m$Year),
+                     popup = popupTable(accdc.cw, zcol = c("COMNAME", "SPROT", "OBDATE"), row.numbers = F, feature.id = F)) %>%
+    
+    
+    addCircleMarkers(data = censuses.sum,
+                     #radius = ~log(coei$Total),
+                     lng = censuses.sum$londec,
+                     lat = censuses.sum$latdec,
+                     fillOpacity = 0.6,
+                     radius = 3,
+                     # fillColor = ~pal(Year), #this calls the colour palette we created above
+                     color = "blue",
+                     weight = 1,
+                     #group = as.character(mydata.sf.m$Year),
+                     popup = popupTable(censuses.sum, zcol = c("colony_name", "most_recent_year", "most_recent_year_count", "max_size"), row.numbers = F, feature.id = F)) %>%
     
     
     addDrawToolbar(targetGroup='Selected',
