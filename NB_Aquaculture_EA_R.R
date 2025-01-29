@@ -454,15 +454,26 @@ server <- function(input, output, session) {
                 #group = "Dataset",
                 popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
 
-    # addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
-    #             color = "grey",
-    #             fillOpacity = 0.15,
-    #             opacity = 1,
-    #             weight = 1,
-    #             #group = "Dataset",
-    #             popup = popupTable(cw.int, zcol = c("BLOC", "NAME", "DESCRIPTIO"), row.numbers = F, feature.id = F)) %>%
-
+    addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
+                color = "grey",
+                fillOpacity = 0.15,
+                opacity = 1,
+                weight = 1,
+                #group = "Dataset",
+                popup = popupTable(cw.int, zcol = c("BLOC", "NAME", "DESCRIPTIO"), row.numbers = F, feature.id = F)) %>%
     
+    addCircleMarkers(data = acss.filter,
+                     #radius = ~log(coei$Total),
+                     lng = acss.filter$longdec,
+                     lat = acss.filter$latdec,
+                     fillOpacity = 0.6,
+                     # fillColor = ~pal(Year), #this calls the colour palette we created above
+                     color = "purple",
+                     weight = 1,
+                     #group = as.character(mydata.sf.m$Year),
+                     popup = popupTable(acss.filter, zcol = c("species", "obcount", "surveysite"), row.numbers = F, feature.id = F)) %>%
+
+
     addPolygons(data = study.site,
                 color = "grey",
                 fillOpacity = 0.25,
