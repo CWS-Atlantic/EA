@@ -132,9 +132,9 @@ cw.data <- filter(cw.data, BLOC %in% cw.int$BLOC)
 #write.csv(cw.data, "Coastal_Block_MalpequeBay.csv")
 
 
-################################################
-##   load in atlantic coastal bird database   ##
-################################################
+##############################################
+##   Atlantic Colonial Waterbird Database   ##
+##############################################
 
 colonies <- read_csv(file = "C:/Users/englishm/Documents/EA/Data/Colonial_Waterbird_Colonies_2024.csv")
 
@@ -153,26 +153,44 @@ colonies <- colonies %>%
 #Filter to coastal block
 colonies.cw <- st_intersection(colonies, cw[cw$BLOC %in% cw.int$BLOC,])
 
+
+## Filter to study site if you need to
+# colonial.birds.study.site <- st_intersection(colonial.birds, study.site)
+
 #subset censuses based on coastal block
 censuses.cw <- filter(censuses,
                       ColonyId %in% unique(colonies.cw$colonyid))
 
 names(colonies.cw)[names(colonies.cw) == 'colonyid'] <- 'ColonyId'
 
+#order by ColonyId, then Species_code
+censuses.cw <- censuses.cw[
+  with(censuses.cw, order(ColonyId, Species_code)),
+]
 
-#try to make sense of the data:
+## Create some summary columns:
+## most_recent_year and max_size
 censuses.cw <- censuses.cw %>%
   group_by(ColonyId, Species_code) %>%
-  dplyr::mutate(most_recent_year = max(Census_Year),
-                max_size = max(Colony_size))
+  dplyr::mutate(most_recent_year = max(Census_Year, na.rm=T),
+                max_size = max(Colony_size, na.rm=T))
 
+## most_recent_year_count
 censuses.sum <- censuses.cw %>%
   group_by(ColonyId, Species_code) %>%
-  mutate(most_recent_year_count = ifelse(Census_Year == most_recent_year, Colony_size, NA),
-         max_count_year = ifelse(Colony_size == max_size, Census_Year, NA))
+  mutate(most_recent_year_count = ifelse(Census_Year == most_recent_year, Colony_size, NA)) %>%
+  fill(most_recent_year_count, .direction = 'downup')
+
+## max_count_year
+censuses.sum <- censuses.sum %>%
+  group_by(ColonyId, Species_code) %>%
+  mutate(max_count_year = ifelse(Colony_size == max_size, Census_Year, NA)) %>%
+  fill(max_count_year, .direction = 'downup')
+
 
 censuses.sum <- censuses.sum[order(censuses.sum$ColonyId),]
 
+#subset columns
 censuses.sum <- select(censuses.sum,
                        CensusId,
                        ColonyId,
@@ -185,7 +203,11 @@ censuses.sum <- select(censuses.sum,
                        max_count_year,
                        max_size)
 
+#join both tables by ColonyId
 censuses.sum <- left_join(colonies.cw, censuses.sum, by = "ColonyId")
+
+## write CSV
+#write.csv(censuses.sum, "CWS_Atlantic_Waterbird_Colonies_2025.csv", row.names = F)
 
 
 #################

@@ -173,9 +173,9 @@ cw.data <- filter(cw.data, BLOC %in% cw.int$BLOC)
 #write.csv(cw.data., "Coastal_Block_StMarysBay.csv")
 
 
-################################################
-##   load in atlantic coastal bird database   ##
-################################################
+##############################################
+##   Atlantic Colonial Waterbird Database   ##
+##############################################
 
 colonies <- read_csv(file = "C:/Users/englishm/Documents/EA/Data/Colonial_Waterbird_Colonies_2024.csv")
 
@@ -276,9 +276,9 @@ ch.atl <- st_intersection(ch, atl)
 ch.study.site <- st_intersection(ch, cw[cw$BLOC %in% cw.int$BLOC,])
 
 
-###############
-##  ACSS     ##
-###############
+############
+##  ACSS  ##
+############
 
 require(readxl)
 acss <- read_xlsx("Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Shorebirds/ACSS data 1971-2022 30_10_2023.xlsx", 1)
