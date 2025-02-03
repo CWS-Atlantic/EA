@@ -375,6 +375,25 @@ bbs.nl <- st_transform(bbs.nl, 4326)
 bbs.nl <- st_zm(bbs.nl, drop = T, what = "ZM")
 
 
+######################
+##   COEI surveys   ##
+######################
+
+coei <- read.csv("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/COEI/Data/Winter COEI Survey/Data/Winter_COEI_Surveys_2003-2019.csv")
+
+coei.sf <- st_as_sf(coei, 
+                    coords = c("Longitude", "Latitude"), 
+                    crs = 4326, 
+                    agr = "constant", 
+                    remove = FALSE,
+                    na.fail = F)
+
+coei.sf <- st_transform(coei.sf, 4326)
+
+#intersect with Coastal Blocks
+coei.sf <- st_intersection(coei.sf, cw[cw$BLOC %in% cw.int$BLOC,])
+
+
 ###############
 ##   ACCDC   ##  NO ACCDC data for NL!
 ###############
@@ -495,7 +514,6 @@ server <- function(input, output, session) {
                      popup = popupTable(acss.filter, zcol = c("species", "obcount", "surveysite"), row.numbers = F, feature.id = F)) %>%
     
     
-    
     addCircleMarkers(data = hard.sf,
                      #radius = ~log(coei$Total),
                      lng = as.numeric(hard.sf$longitude),
@@ -506,6 +524,19 @@ server <- function(input, output, session) {
                      weight = 1,
                      #group = as.character(mydata.sf.m$Year),
                      popup = popupTable(hard.sf, zcol = c("HADU_total", "PUSA", "year"), row.numbers = F, feature.id = F)) %>%
+    
+    addCircleMarkers(data = coei.sf,
+                     #radius = ~log(coei$Total),
+                     lng = as.numeric(coei.sf$Longitude),
+                     lat = as.numeric(coei.sf$Latitude),
+                     fillOpacity = 0.6,
+                     # fillColor = ~pal(Year), #this calls the colour palette we created above
+                     color = "purple",
+                     weight = 1,
+                     #group = as.character(mydata.sf.m$Year),
+                     popup = popupTable(coei.sf, zcol = c("Species", "White", "Brown", "Unknown", "Total"), row.numbers = F, feature.id = F)) %>%
+    
+    
 
     # addCircleMarkers(data = bago,
     #                  #radius = ~log(coei$Total),
