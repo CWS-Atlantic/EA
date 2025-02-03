@@ -154,7 +154,7 @@ sd <- st_transform(sd, 4326)
 
 #read in coastal blocks shapefile
 
-cw <- st_read(dsn = "Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/Coastal Block Areas.shp")
+cw <- st_read(dsn = "Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Waterfowl/Coastal Survey Blocks/Coastal Block Areas.shp")
 
 cw <- st_transform(cw, 4326)
 
@@ -379,7 +379,7 @@ bbs.nl <- st_zm(bbs.nl, drop = T, what = "ZM")
 ##   COEI surveys   ##
 ######################
 
-coei <- read.csv("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/COEI/Data/Winter COEI Survey/Data/Winter_COEI_Surveys_2003-2019.csv")
+coei <- read.csv("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/COEI/Winter COEI Survey/Data/Processed Data/Winter_COEI_Surveys_2003-2019.csv")
 
 coei.sf <- st_as_sf(coei, 
                     coords = c("Longitude", "Latitude"), 

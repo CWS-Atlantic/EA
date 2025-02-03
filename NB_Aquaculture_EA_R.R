@@ -154,7 +154,7 @@ bbs.nb <- st_zm(bbs.nb, drop = T, what = "ZM")
 
 #read in coastal blocks shapefile
 
-cw <- st_read(dsn = "Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/Coastal Block Areas.shp")
+cw <- st_read(dsn = "Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Waterfowl/Coastal Survey Blocks/Coastal Block Areas.shp")
 
 cw <- st_transform(cw, 4326)
 
