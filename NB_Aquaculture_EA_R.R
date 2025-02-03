@@ -382,7 +382,7 @@ ui <- miniPage(
   
   #change the app title to whatever you like
   
-  gadgetTitleBar("mydata App", left = NULL, right = NULL),
+  gadgetTitleBar("NB EA Template", left = NULL, right = NULL),
   
   #change the icons to whatever you like. icons can be found here: https://fontawesome.com/icons?d=gallery
   
