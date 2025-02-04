@@ -396,11 +396,6 @@ ui <- miniPage(
 ##   Create Shiny server   ##
 #############################
 
-
-#######################
-##   create server   ##
-#######################
-
 server <- function(input, output, session) {
   
   
