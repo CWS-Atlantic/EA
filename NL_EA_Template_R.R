@@ -37,62 +37,6 @@ require(DT)
 #setwd("C:/Users/englishm/Documents/EA/app/")
 
 
-
-# ##########################################
-# ##  load in NS coastal island database  ##
-# ##########################################
-# 
-# #path <- "C:/Users/englishm/Documents/"
-# 
-# ci.sf <- st_read(dsn = "C:/Users/englishm/Documents/Coastal Islands/NS_Coastal_Islands_Prioritization/Data/Coastal_Islands_DB_Design_FEB_20.gdb")
-# 
-# #ci.df <- as.data.frame(ci.sf)
-# 
-# ci.sf$centroids <- st_transform(ci.sf, 4326) %>% 
-#   st_centroid() %>% 
-#   st_geometry()
-# 
-# # 
-# # cents <- geom_split(ci.sf$centroids)
-# # 
-# # cents <- cents %>%
-# #   st_as_sf(coords = c("lon", "lat")) %>%
-# #   st_set_crs(4326)
-# # 
-# # ci.sf$lon_cent <- as.numeric(cents$lon)
-# # ci.sf$lat_cent <- as.numeric(cents$lat)
-# # 
-# # ci.df$lon_cent <- as.numeric(cents$lon)
-# # ci.df$lat_cent <- as.numeric(cents$lat)
-# # 
-# # # # check with
-# 
-# # 
-# # ci.point <- ci.df
-# # 
-# # ci.point$SHAPE <- NULL
-# # 
-# # ci.point <- ci.point %>%
-# #   st_as_sf(coords = c("lon_cent", "lat_cent")) %>%
-# #   st_set_crs(4326)
-# 
-# 
-# # #filter out a county - we want Yarmouth for Lobster bay
-# # ci.sub <- filter(ci.point, COUNTY == "Yarmouth")
-# 
-# #reproject so it works in Leaflet
-# ci.sub <- st_transform(ci.sf, 4326)
-# ci.sub <- st_zm(ci.sub, drop = T, what = "ZM")
-# 
-# #standardize the geonames (island names)
-# ci.sub$GEONAME <- str_standardize(ci.sub$GEONAME)
-# 
-# ci.sub <- ci.sub[order(ci.sub$GEONAME),]
-# 
-# unique(ci.sub$GEONAME)
-
-
-
 ######################################
 ##   load in Study Site area data   ##
 ######################################
@@ -211,8 +155,7 @@ names(colonies.cw)[names(colonies.cw) == 'colonyid'] <- 'ColonyId'
 
 #order by ColonyId, then Species_code
 censuses.cw <- censuses.cw[
-  with(censuses.cw, order(ColonyId, Species_code)),
-]
+  with(censuses.cw, order(ColonyId, Species_code)),]
 
 ## Create some summary columns:
 ## most_recent_year and max_size
@@ -360,7 +303,6 @@ hard.sf <- st_intersection(hard.sf, cw[cw$BLOC %in% cw.int$BLOC,])
 
 
 write.csv(hard.sf, "Harlequin_Duck_Purple_Sandpiper_Maces_Bay.csv")
-
 
 
 #####################
@@ -536,7 +478,6 @@ server <- function(input, output, session) {
                      #group = as.character(mydata.sf.m$Year),
                      popup = popupTable(coei.sf, zcol = c("Species", "White", "Brown", "Unknown", "Total"), row.numbers = F, feature.id = F)) %>%
     
-    
 
     # addCircleMarkers(data = bago,
     #                  #radius = ~log(coei$Total),
@@ -588,7 +529,6 @@ server <- function(input, output, session) {
                   weight = 1,
                   #group = "Dataset",
                   popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
-
     
   
     addDrawToolbar(targetGroup='Selected',
@@ -605,8 +545,6 @@ server <- function(input, output, session) {
                    editOptions = editToolbarOptions(edit = FALSE, selectedPathOptions = selectedPathOptions()))
   
   edits <- callModule(editMod, "mymap", leafmap = lf)
-  
-  
   
   
   #setup a reactive dataset that only looks at the data in the drawn polygon
