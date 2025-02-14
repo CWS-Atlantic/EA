@@ -118,7 +118,7 @@ require(DT)
 
 
 #read in study site polygon
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2024/2024 Freeport NS/Freeport.kml")
+study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 EverWind NS/EverWind.kml")
 
 study.site <- st_transform(study.site, 4326)
 
@@ -353,7 +353,7 @@ bago.inc <- st_intersection(bago.inc, cw[cw$BLOC %in% cw.int$BLOC,])
 ##   Harlequin Data   ##
 ########################
 
-hard <- read_xlsx("C:/Users/englishm/Documents/Harlequins/HADU_PUSA_Compilation_2024-09-18.xlsx", 2)
+hard <- read_xlsx("C:/Users/englishm/Documents/Harlequins/HADU_PUSA_Compilation_2024-10-04.xlsx", 2)
 
 
 #convert to a SF object
@@ -361,7 +361,8 @@ hard.sf <- st_as_sf(hard,
                     coords = c("longitude", "latitude"), 
                     crs = 4326, 
                     agr = "constant", 
-                    remove = FALSE)
+                    remove = FALSE,
+                    na.fail = F)
 
 hard.sf <- st_intersection(hard.sf, cw[cw$BLOC %in% cw.int$BLOC,])
 
@@ -535,16 +536,16 @@ server <- function(input, output, session) {
     
     
     
-  addCircleMarkers(data = hard.sf,
-                   #radius = ~log(coei$Total),
-                   lng = as.numeric(hard.sf$longitude),
-                   lat = as.numeric(hard.sf$latitude),
-                   fillOpacity = 0.6,
-                   # fillColor = ~pal(Year), #this calls the colour palette we created above
-                   color = "grey",
-                   weight = 1,
-                   #group = as.character(mydata.sf.m$Year),
-                   popup = popupTable(hard.sf, zcol = c("HADU_total", "PUSA", "year"), row.numbers = F, feature.id = F)) %>%
+  # addCircleMarkers(data = hard.sf,
+  #                  #radius = ~log(coei$Total),
+  #                  lng = as.numeric(hard.sf$longitude),
+  #                  lat = as.numeric(hard.sf$latitude),
+  #                  fillOpacity = 0.6,
+  #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
+  #                  color = "grey",
+  #                  weight = 1,
+  #                  #group = as.character(mydata.sf.m$Year),
+  #                  popup = popupTable(hard.sf, zcol = c("HADU_total", "PUSA", "year"), row.numbers = F, feature.id = F)) %>%
 
   addCircleMarkers(data = bago.inc,
                    #radius = ~log(coei$Total),
@@ -558,19 +559,19 @@ server <- function(input, output, session) {
                    popup = popupTable(bago.inc, zcol = c("Location", "Total", "Year_"), row.numbers = F, feature.id = F)) %>%
 
   
-  addCircleMarkers(data = censuses.sum,
-                   #radius = ~log(coei$Total),
-                   lng = censuses.sum$londec,
-                   lat = censuses.sum$latdec,
-                   fillOpacity = 0.6,
-                   radius = 3,
-                   # fillColor = ~pal(Year), #this calls the colour palette we created above
-                   color = "blue",
-                   weight = 1,
-                   #group = as.character(mydata.sf.m$Year),
-                   popup = popupTable(censuses.sum, zcol = c("colony_name", "most_recent_year", "most_recent_year_count", "max_size"), row.numbers = F, feature.id = F)) %>%
-    
-    
+  # addCircleMarkers(data = censuses.sum,
+  #                  #radius = ~log(coei$Total),
+  #                  lng = censuses.sum$londec,
+  #                  lat = censuses.sum$latdec,
+  #                  fillOpacity = 0.6,
+  #                  radius = 3,
+  #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
+  #                  color = "blue",
+  #                  weight = 1,
+  #                  #group = as.character(mydata.sf.m$Year),
+  #                  popup = popupTable(censuses.sum, zcol = c("colony_name", "most_recent_year", "most_recent_year_count", "max_size"), row.numbers = F, feature.id = F)) %>%
+  #   
+  #   
     # addPolygons(data = sd,
     #             color = "blue",
     #             fillOpacity = 0.15,
