@@ -17,6 +17,7 @@ require(stringr)
 require(tidyr)
 require(tricky)
 require(DT)
+require(readxl)
 
 
 #######################################
@@ -42,37 +43,36 @@ require(DT)
 ##################################
 
 #create polygon out of point coordinates and buffer:
+#
+# #NB Sipu Wind
+#
+df <- data.frame(
+  lat = 45.649006,
+  lon = -65.209262
+)
+
+df.sf <- df %>%
+  st_as_sf(coords = c("lon", "lat"))%>%
+  st_set_crs(4326)
+
+df.utm <- st_transform(df.sf, 32620) #CRS 32620 for this
+
+#buffer by 5000m 
+df.5000 <- st_buffer(df.utm, dist = 5000)
+
+#turn to polygon:
+df.5000 <- df.5000 %>%
+  summarise(geometry = st_combine(geometry)) %>%
+  st_cast("POLYGON")
+
+#transform back to lat/lon
+df.5000 <- st_transform(df.5000, 4326) #CRS 4326 for this (UTM Zone 20)
 
 
-# # #West Bay NS near Parrsboro
-# # 
-# df <- data.frame(
-#   lat = 45.399852,
-#   lon = -64.384008
-# )
-# 
-# df.sf <- df %>%
-#   st_as_sf(coords = c("lon", "lat"))%>%
-#   st_set_crs(4326)
-# 
-# df.utm <- st_transform(df.sf, 32620) #CRS 32620 for this
-# 
-# #buffer by 3000m for Higgins Shore or 150m for Cape Edgmont
-# df.3000 <- st_buffer(df.utm, dist = 3000)
-# 
-# #turn to polygon:
-# df.3000 <- df.3000 %>%
-#   summarise(geometry = st_combine(geometry)) %>%
-#   st_cast("POLYGON")
-# 
-# #transform back to lat/lon
-# df.3000 <- st_transform(df.3000, 4326) #CRS 4326 for this
-# 
-# 
-# study.site <- df.3000
+study.site <- df.5000
 
 
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Salmon River NB/SalmonRiverWind.kml")
+# study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Salmon River NB/SalmonRiverWind.kml")
 
 study.site <- st_transform(study.site, 4326)
 
@@ -94,7 +94,6 @@ atl <- st_make_valid(atl)
 #################
 
 ch <- st_read(dsn = "Q:/GW/EC1121SAR_EEP_Ops/ATL_CWS_SAR/Critical_Habitat/Regional_Flatten.gdb")
-
 
 ch <- st_transform(ch, 4326)
 
@@ -120,7 +119,7 @@ ch.study.site <- st_intersection(ch, cw[cw$BLOC %in% cw.int$BLOC,])
 ##   EWS PLOTS   ##
 ###################
 
-ews.nb <- st_read(dsn = "C:/Users/EnglishM/Documents/EWS/Maritimes/Shiny App/app/data/EWS_Maritimes_Plots.gdb")
+ews.nb <- st_read(dsn = "C:/Users/EnglishM/Documents/EWS/Maritimes/Shiny App/app/data/EWS_Maritimes_Plots_All.gdb")
 
 ews.nb <- st_transform(ews.nb, 4326)
 
@@ -277,10 +276,7 @@ unique(accdc.cw$COMNAME)
 ##  ACSS  ##
 ############
 
-require(readxl)
-
 acss <- read_xlsx("Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Shorebirds/ACSS data 1971-2022 30_10_2023.xlsx", 1)
-
 
 acss <- set_standard_names(acss)
 
@@ -446,32 +442,32 @@ server <- function(input, output, session) {
                      options = layersControlOptions(collapsed = FALSE)) %>%
     
     
-    addPolygons(data = ch.atl,
-                color = "blue",
-                fillOpacity = 0.15,
-                opacity = 1,
-                weight = 1,
-                #group = "Dataset",
-                popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
-
-    addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
-                color = "grey",
-                fillOpacity = 0.15,
-                opacity = 1,
-                weight = 1,
-                #group = "Dataset",
-                popup = popupTable(cw.int, zcol = c("BLOC", "NAME", "DESCRIPTIO"), row.numbers = F, feature.id = F)) %>%
-    
-    addCircleMarkers(data = acss.filter,
-                     #radius = ~log(coei$Total),
-                     lng = acss.filter$longdec,
-                     lat = acss.filter$latdec,
-                     fillOpacity = 0.6,
-                     # fillColor = ~pal(Year), #this calls the colour palette we created above
-                     color = "purple",
-                     weight = 1,
-                     #group = as.character(mydata.sf.m$Year),
-                     popup = popupTable(acss.filter, zcol = c("species", "obcount", "surveysite"), row.numbers = F, feature.id = F)) %>%
+    # addPolygons(data = ch.atl,
+    #             color = "blue",
+    #             fillOpacity = 0.15,
+    #             opacity = 1,
+    #             weight = 1,
+    #             #group = "Dataset",
+    #             popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+    # 
+    # addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
+    #             color = "grey",
+    #             fillOpacity = 0.15,
+    #             opacity = 1,
+    #             weight = 1,
+    #             #group = "Dataset",
+    #             popup = popupTable(cw.int, zcol = c("BLOC", "NAME", "DESCRIPTIO"), row.numbers = F, feature.id = F)) %>%
+    # 
+    # addCircleMarkers(data = acss.filter,
+    #                  #radius = ~log(coei$Total),
+    #                  lng = acss.filter$longdec,
+    #                  lat = acss.filter$latdec,
+    #                  fillOpacity = 0.6,
+    #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
+    #                  color = "purple",
+    #                  weight = 1,
+    #                  #group = as.character(mydata.sf.m$Year),
+    #                  popup = popupTable(acss.filter, zcol = c("species", "obcount", "surveysite"), row.numbers = F, feature.id = F)) %>%
 
 
     addPolygons(data = study.site,
