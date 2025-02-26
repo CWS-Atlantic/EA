@@ -66,7 +66,7 @@ require(DT)
 # study.site <- st_transform(df.1000, 4326) #CRS 4326 for this
 
 
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2024/2024 Botwood NL/BotwoodEVREC.kml")
+study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Lark Harbour NL/LarkHarbour.kml")
 
 study.site <- st_transform(study.site, 4326)
 
@@ -445,7 +445,7 @@ server <- function(input, output, session) {
                      lat = acss.filter$latdec,
                      fillOpacity = 0.6,
                      # fillColor = ~pal(Year), #this calls the colour palette we created above
-                     color = "purple",
+                     color = "brown",
                      weight = 1,
                      #group = as.character(mydata.sf.m$Year),
                      popup = popupTable(acss.filter, zcol = c("species", "obcount", "surveysite"), row.numbers = F, feature.id = F)) %>%
@@ -462,17 +462,17 @@ server <- function(input, output, session) {
                      #group = as.character(mydata.sf.m$Year),
                      popup = popupTable(hard.sf, zcol = c("HADU_total", "PUSA", "year"), row.numbers = F, feature.id = F)) %>%
     
-    addCircleMarkers(data = coei.sf,
-                     #radius = ~log(coei$Total),
-                     lng = as.numeric(coei.sf$Longitude),
-                     lat = as.numeric(coei.sf$Latitude),
-                     fillOpacity = 0.6,
-                     # fillColor = ~pal(Year), #this calls the colour palette we created above
-                     color = "purple",
-                     weight = 1,
-                     #group = as.character(mydata.sf.m$Year),
-                     popup = popupTable(coei.sf, zcol = c("Species", "White", "Brown", "Unknown", "Total"), row.numbers = F, feature.id = F)) %>%
-    
+    # addCircleMarkers(data = coei.sf,
+    #                  #radius = ~log(coei$Total),
+    #                  lng = as.numeric(coei.sf$Longitude),
+    #                  lat = as.numeric(coei.sf$Latitude),
+    #                  fillOpacity = 0.6,
+    #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
+    #                  color = "purple",
+    #                  weight = 1,
+    #                  #group = as.character(mydata.sf.m$Year),
+    #                  popup = popupTable(coei.sf, zcol = c("Species", "White", "Brown", "Unknown", "Total"), row.numbers = F, feature.id = F)) %>%
+    # 
 
     # addCircleMarkers(data = bago,
     #                  #radius = ~log(coei$Total),
@@ -517,14 +517,14 @@ server <- function(input, output, session) {
                  popup = popupTable(bbs.nl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
       
     
-    addPolygons(data = ch.atl,
-                  color = "blue",
-                  fillOpacity = 0.15,
-                  opacity = 1,
-                  weight = 1,
-                  #group = "Dataset",
-                  popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
-    
+    # addPolygons(data = ch.atl,
+    #               color = "blue",
+    #               fillOpacity = 0.15,
+    #               opacity = 1,
+    #               weight = 1,
+    #               #group = "Dataset",
+    #               popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+    # 
   
     addDrawToolbar(targetGroup='Selected',
                    polylineOptions = FALSE,
