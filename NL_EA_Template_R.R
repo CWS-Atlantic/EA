@@ -302,7 +302,7 @@ hard.sf <- st_as_sf(hard,
 hard.sf <- st_intersection(hard.sf, cw[cw$BLOC %in% cw.int$BLOC,])
 
 
-write.csv(hard.sf, "Harlequin_Duck_Purple_Sandpiper_Maces_Bay.csv")
+#write.csv(hard.sf, "Harlequin_Duck_Purple_Sandpiper_Maces_Bay.csv")
 
 
 #####################
@@ -340,8 +340,21 @@ coei.sf <- st_intersection(coei.sf, cw[cw$BLOC %in% cw.int$BLOC,])
 ##   ACCDC   ##  NO ACCDC data for NL!
 ###############
 
-# nl.accdc <- st_read("C:/Users/englishm/Documents/EA/Data/ACCDC/NS/ACCDC_PE_RARE_SENS_240609.gdb")
-# 
+nl.plants <- st_read("C:/Users/englishm/Documents/EA/2025/2025 Lark Harbour NL/ACCDC_LarkHarbour/NF_PLANTS_WD_SAR_SOCC_Export_4Mar2025.shp")
+
+nl.plants <- st_transform(nl.plants, 4326)
+
+
+nl.fauna <- st_read("C:/Users/englishm/Documents/EA/2025/2025 Lark Harbour NL/ACCDC_LarkHarbour/RAREFAUNA_WD_SAR_SOCC_Export_4Mar2025.shp")
+
+nl.fauna <- st_transform(nl.fauna, 4326)
+
+
+nl.marten <- st_read("C:/Users/englishm/Documents/EA/2025/2025 Lark Harbour NL/ACCDC_LarkHarbour/MARTEN_WD_EXPORT_4Mar2025.shp")
+
+nl.marten <- st_transform(nl.marten, 4326)
+
+
 # nl.accdc <- filter(nl.accdc,
 #                    NPROTSAR %in% c("SC", "V", "T", "E"))
 # 
