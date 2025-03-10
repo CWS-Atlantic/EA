@@ -348,53 +348,6 @@ bago.inc <- st_intersection(bago.inc, cw[cw$BLOC %in% cw.int$BLOC,])
 # #write.csv(hard.sf, "Harlequin_Duck_Purple_Sandpiper_Maces_Bay.csv")
 
 
-######################
-##   banding data   ##
-######################
-
-# ns.enc <- read_csv(file = "C:/Users/englishm/Documents/EA/nsallenc2021.csv")
-# 
-# ns.enc <- set_standard_names(ns.enc)
-# 
-# #select useful columns since the original data contain 88
-# ns.enc <- select(ns.enc, 
-#                  b_day, 
-#                  b_month, 
-#                  b_year, 
-#                  b_region, 
-#                  b_country_code,
-#                  gisblat,
-#                  gisblong,
-#                  gisrlat,
-#                  gisrlong,
-#                  hunt_season_surv_,
-#                  how_obt,
-#                  vhow,
-#                  permit,
-#                  r_month,
-#                  r_region,
-#                  r_year,
-#                  sex,
-#                  vage,
-#                  state_name_80,
-#                  #state,
-#                  country_name_77)
-# 
-# str(ns.enc)
-# 
-# #create sf object
-# ns.enc.sf <- st_as_sf(ns.enc, 
-#                       coords = c("gisrlong", "gisrlat"), 
-#                       crs = 4326, 
-#                       agr = "constant", 
-#                       remove = FALSE,
-#                       na.fail = FALSE)
-# 
-# ns.enc.sf <- st_transform(ns.enc.sf, 4326)
-# 
-# ns.abo <- st_intersection(ns.enc.sf, aqua)
-
-
 ###############################
 ##   Create user interface   ##
 ###############################
