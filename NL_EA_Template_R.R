@@ -268,9 +268,9 @@ unique(acss.filter$species)
 ##   BAGO data   ##
 ###################
 
-bago.inc <- st_read(dsn = "Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/BAGO_2017/Data/BAGO_2017.gdb", layer = "BAGO_incidental")
+bago.inc <- st_read(dsn = "Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/BAGO/Data/BAGO_2017.gdb", layer = "BAGO_incidental")
 
-bago.cws <- st_read("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/BAGO_2017/Data/CWS Surveys/CWS_BAGO_Surveys_1981-2010.gdb")
+bago.cws <- st_read("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/BAGO/Data/CWS Surveys/CWS_BAGO_Surveys_1981-2010.gdb")
 
 bago.cws <- filter(bago.cws, Species_Code_EN == "BAGO")
 
@@ -288,7 +288,7 @@ bago.inc <- st_intersection(bago.inc, cw[cw$BLOC %in% cw.int$BLOC,])
 ##   Harlequin Data   ##
 ########################
 
-hard <- read_xlsx("C:/Users/englishm/Documents/Harlequins/HADU_PUSA_Compilation_2024-10-04.xlsx", 2)
+hard <- read_xlsx("C:/Users/englishm/Documents/Harlequins/HADU_PUSA_Compilation_2025-03-17.xlsx", 2)
 
 
 #convert to a SF object
