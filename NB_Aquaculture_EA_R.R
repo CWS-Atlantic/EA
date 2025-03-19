@@ -72,12 +72,20 @@ df.5000 <- st_transform(df.5000, 4326) #CRS 4326 for this (UTM Zone 20)
 study.site <- df.5000
 
 
-# study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Salmon River NB/SalmonRiverWind.kml")
+study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Neguac NB/NeguacSpat.kml")
 
 study.site <- st_transform(study.site, 4326)
 
 #drop the 3D field from the google earth shapefile
 study.site <- st_zm(study.site, drop = T, what = "ZM")
+
+#buffer the study site by 300m for Rachel's request
+study.site <- st_transform(study.site, crs = "+proj=utm +zone=20")
+
+study.site <- st_buffer(study.site, dist = 300)
+
+#transform back to lat-lon
+study.site <- st_transform(study.site, 4326)
 
 
 atl <- st_read(dsn = "C:/Users/englishm/Documents/EA/Data/Atlantic_Region.kml")
@@ -265,9 +273,9 @@ nb.accdc <- filter(nb.accdc,
 
 nb.accdc <- st_transform(nb.accdc, 4326)
 
-#accdc.cw <- st_intersection(nb.accdc, cw[cw$BLOC %in% cw.int$BLOC,])
+accdc.cw <- st_intersection(nb.accdc, cw[cw$BLOC %in% cw.int$BLOC,])
 
-accdc.cw <- st_intersection(nb.accdc, study.site)
+#accdc.cw <- st_intersection(nb.accdc, study.site)
 
 unique(accdc.cw$COMNAME)
 
@@ -309,6 +317,7 @@ range(as.numeric(acss.filter$obcount), na.rm=T)
 
 unique(acss.filter$species)
 
+
 ###################
 ##   BAGO data   ##
 ###################
@@ -333,7 +342,7 @@ bago.inc <- st_intersection(bago.inc, cw[cw$BLOC %in% cw.int$BLOC,])
 ##   Harlequin Data   ##
 ########################
 
-hard <- read_xlsx("C:/Users/englishm/Documents/Harlequins/HADU_PUSA_Compilation_2024-10-04.xlsx", 2)
+hard <- read_xlsx("C:/Users/englishm/Documents/Harlequins/HADU_PUSA_Compilation_2025-03-17.xlsx", 2)
 
 # #rename columns
 # names(hard) <- c("survey_id", "year", "month", "day", "time", "waypoint_id", "latitude", "longitude", "province", "region", "location", "notes", "HARD_M", "HARD_F", "HARD_unkn", "species", "total")
@@ -361,7 +370,7 @@ sd <- st_read(dsn = "C:/Users/englishm/Documents/EA/seaDuckKeyHabitatSites_20220
 
 sd <- st_transform(sd, 4326)
 
-sd <- filter(sd, label == "South Shore Nova Scotia")
+#sd <- filter(sd, label == "South Shore Nova Scotia")
 
 
 ###############################
@@ -442,6 +451,15 @@ server <- function(input, output, session) {
                      options = layersControlOptions(collapsed = FALSE)) %>%
     
     
+    addPolygons(data = study.site,
+                color = "grey",
+                fillOpacity = 0.15,
+                opacity = 1,
+                weight = 1,
+                #group = "Dataset",
+                popup = popupTable(study.site, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+    
+    
     # addPolygons(data = ch.atl,
     #             color = "blue",
     #             fillOpacity = 0.15,
@@ -450,24 +468,24 @@ server <- function(input, output, session) {
     #             #group = "Dataset",
     #             popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
     # 
-    # addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
-    #             color = "grey",
-    #             fillOpacity = 0.15,
-    #             opacity = 1,
-    #             weight = 1,
-    #             #group = "Dataset",
-    #             popup = popupTable(cw.int, zcol = c("BLOC", "NAME", "DESCRIPTIO"), row.numbers = F, feature.id = F)) %>%
-    # 
-    # addCircleMarkers(data = acss.filter,
-    #                  #radius = ~log(coei$Total),
-    #                  lng = acss.filter$longdec,
-    #                  lat = acss.filter$latdec,
-    #                  fillOpacity = 0.6,
-    #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
-    #                  color = "purple",
-    #                  weight = 1,
-    #                  #group = as.character(mydata.sf.m$Year),
-    #                  popup = popupTable(acss.filter, zcol = c("species", "obcount", "surveysite"), row.numbers = F, feature.id = F)) %>%
+    addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
+                color = "grey",
+                fillOpacity = 0.15,
+                opacity = 1,
+                weight = 1,
+                #group = "Dataset",
+                popup = popupTable(cw.int, zcol = c("BLOC", "NAME", "DESCRIPTIO"), row.numbers = F, feature.id = F)) %>%
+
+    addCircleMarkers(data = acss.filter,
+                     #radius = ~log(coei$Total),
+                     lng = acss.filter$longdec,
+                     lat = acss.filter$latdec,
+                     fillOpacity = 0.6,
+                     # fillColor = ~pal(Year), #this calls the colour palette we created above
+                     color = "purple",
+                     weight = 1,
+                     #group = as.character(mydata.sf.m$Year),
+                     popup = popupTable(acss.filter, zcol = c("species", "obcount", "surveysite"), row.numbers = F, feature.id = F)) %>%
 
 
     addPolygons(data = study.site,
@@ -486,13 +504,13 @@ server <- function(input, output, session) {
                 #group = "Dataset",
                 popup = popupTable(ews.nb, zcol = c("desc_", "plot_id"), row.numbers = F, feature.id = F)) %>%
     
-    addPolygons(data = nb.ag,
-                color = "green",
-                fillOpacity = 0.15,
-                opacity = 1,
-                weight = 1,
-                #group = "Dataset",
-                popup = popupTable(nb.ag, zcol = c("LABEL"), row.numbers = F, feature.id = F)) %>%
+    # addPolygons(data = nb.ag,
+    #             color = "green",
+    #             fillOpacity = 0.15,
+    #             opacity = 1,
+    #             weight = 1,
+    #             #group = "Dataset",
+    #             popup = popupTable(nb.ag, zcol = c("LABEL"), row.numbers = F, feature.id = F)) %>%
     
     
     addPolylines(data = bbs.nb,
@@ -504,7 +522,7 @@ server <- function(input, output, session) {
                  popup = popupTable(bbs.nb, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
     
     addCircleMarkers(data = accdc.cw,
-                     #radius = ~log(coei$Total),
+                     radius = 2,
                      lng = accdc.cw$LONDEC,
                      lat = accdc.cw$LATDEC,
                      fillOpacity = 0.6,
