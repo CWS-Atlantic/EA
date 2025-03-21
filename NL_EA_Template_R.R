@@ -263,6 +263,9 @@ range(as.numeric(acss.filter$obcount))
 
 unique(acss.filter$species)
 
+# write.csv(acss.filter, 
+#           "BayOfIslands_ACSS_Filter.csv",
+#           row.names = F)
 
 ###################
 ##   BAGO data   ##
