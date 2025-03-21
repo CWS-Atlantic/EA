@@ -258,7 +258,7 @@ accdc.cw <- st_intersection(pe.accdc, cw[cw$BLOC %in% cw.int$BLOC,])
 
 require(readxl)
 
-acss <- read_xlsx("Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Shorebirds/ACSS data 1971-2022 30_10_2023.xlsx", 1)
+acss <- read_xlsx("Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Shorebirds/ACSS data 1971-2023_29-08-2024.xlsx", 1)
 
 
 acss <- set_standard_names(acss)
