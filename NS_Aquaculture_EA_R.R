@@ -118,7 +118,7 @@ require(DT)
 
 
 #read in study site polygon
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 EverWind NS/EverWind.kml")
+study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Hartlen Point NS/HartlenPoint.kml")
 
 study.site <- st_transform(study.site, 4326)
 
@@ -150,7 +150,7 @@ sd <- st_transform(sd, 4326)
 
 #read in coastal blocks shapefile
 
-cw <- st_read(dsn = "Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Waterfowl/Coastal Survey Blocks/Coastal Block Areas.shp")
+cw <- st_read(dsn = "Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/CWS_Atlantic_Coastal_Blocks_SCF_Atlantique_Blocs_Cotiers.gdb")
 
 cw <- st_transform(cw, 4326)
 
@@ -298,7 +298,6 @@ acss.sf <- acss %>%
 
 acss.cw <- st_transform(cw[cw$BLOC %in% cw.int$BLOC,], "+proj=utm +zone=20 +datum=WGS84") ##Almost all of NS is zone 20. Zone 21 at the eastern edge of Cape Breton, Zone 19 near Brier Island / Yarmouth
 
-#lb.out <- st_cast(lb.out,"MULTILINESTRING")
 
 #make the 5000m buffer
 acss.cw.5000 <- st_buffer(acss.cw, dist = 5000)
@@ -307,7 +306,7 @@ acss.cw.5000 <- st_transform(acss.cw.5000, "+proj=longlat +datum=WGS84")
 
 acss.filter <- st_intersection(acss.sf, acss.cw.5000)
 
-#acss.filter <- filter(acss.sf, site_code %in% c("NECO"))
+#acss.filter <- filter(acss.sf, site_code %in% c("HNPT"))
 
 range(as.numeric(acss.filter$obcount))
 
@@ -353,7 +352,7 @@ bago.inc <- st_intersection(bago.inc, cw[cw$BLOC %in% cw.int$BLOC,])
 ##   Harlequin Data   ##
 ########################
 
-hard <- read_xlsx("C:/Users/englishm/Documents/Harlequins/HADU_PUSA_Compilation_2024-10-04.xlsx", 2)
+hard <- read_xlsx("C:/Users/englishm/Documents/Harlequins/HADU_PUSA_Compilation_2025-03-17.xlsx", 2)
 
 
 #convert to a SF object
@@ -508,7 +507,7 @@ server <- function(input, output, session) {
                 opacity = 1,
                 weight = 1,
                 #group = "Dataset",
-                popup = popupTable(cw.int, zcol = c("BLOC", "NAME", "DESCRIPTIO"), row.numbers = F, feature.id = F)) %>%
+                popup = popupTable(cw.int, zcol = c("BLOC", "NAME_NOM"), row.numbers = F, feature.id = F)) %>%
     
     
     addCircleMarkers(data = acss.filter,
@@ -523,29 +522,29 @@ server <- function(input, output, session) {
                      popup = popupTable(acss.filter, zcol = c("species", "obcount", "surveysite"), row.numbers = F, feature.id = F)) %>%
     
     
-    addCircleMarkers(data = accdc.cw,
-                     #radius = ~log(coei$Total),
-                     lng = accdc.cw$LONDEC,
-                     lat = accdc.cw$LATDEC,
-                     fillOpacity = 0.6,
-                     # fillColor = ~pal(Year), #this calls the colour palette we created above
-                     color = "yellow",
-                     weight = 1,
-                     #group = as.character(mydata.sf.m$Year),
-                     popup = popupTable(accdc.cw, zcol = c("COMNAME", "SPROT", "OBDATE"), row.numbers = F, feature.id = F)) %>%
+    # addCircleMarkers(data = accdc.cw,
+    #                  #radius = ~log(coei$Total),
+    #                  lng = accdc.cw$LONDEC,
+    #                  lat = accdc.cw$LATDEC,
+    #                  fillOpacity = 0.6,
+    #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
+    #                  color = "yellow",
+    #                  weight = 1,
+    #                  #group = as.character(mydata.sf.m$Year),
+    #                  popup = popupTable(accdc.cw, zcol = c("COMNAME", "SPROT", "OBDATE"), row.numbers = F, feature.id = F)) %>%
+    # 
+    # 
     
-    
-    
-  # addCircleMarkers(data = hard.sf,
-  #                  #radius = ~log(coei$Total),
-  #                  lng = as.numeric(hard.sf$longitude),
-  #                  lat = as.numeric(hard.sf$latitude),
-  #                  fillOpacity = 0.6,
-  #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
-  #                  color = "grey",
-  #                  weight = 1,
-  #                  #group = as.character(mydata.sf.m$Year),
-  #                  popup = popupTable(hard.sf, zcol = c("HADU_total", "PUSA", "year"), row.numbers = F, feature.id = F)) %>%
+  addCircleMarkers(data = hard.sf,
+                   #radius = ~log(coei$Total),
+                   lng = as.numeric(hard.sf$longitude),
+                   lat = as.numeric(hard.sf$latitude),
+                   fillOpacity = 0.6,
+                   # fillColor = ~pal(Year), #this calls the colour palette we created above
+                   color = "grey",
+                   weight = 1,
+                   #group = as.character(mydata.sf.m$Year),
+                   popup = popupTable(hard.sf, zcol = c("HADU_total", "PUSA", "year"), row.numbers = F, feature.id = F)) %>%
 
   addCircleMarkers(data = bago.inc,
                    #radius = ~log(coei$Total),
