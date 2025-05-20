@@ -368,6 +368,58 @@ hard.sf <- st_intersection(hard.sf, cw[cw$BLOC %in% cw.int$BLOC,])
 
 #write.csv(hard.sf, "Harlequin_Duck_Purple_Sandpiper_Maces_Bay.csv")
 
+###################
+##   ATBR data   ##
+###################
+
+#excel data
+atbr <- read.csv("C:/Users/EnglishM/Documents/Atlantic Brant/Brant_data_2023-05-11.csv")
+
+atbr <- set_standard_names(atbr)
+
+
+#clean up the atbr data
+
+atbr$first_block <- as.numeric(substr(atbr$blockid, start = 1, stop = 3))
+
+atbr$first_block <- sub("\\,.*", "", atbr$blockid)
+
+atbr$BLOC <- as.numeric(atbr$first_block)
+
+#filter for only atlantic canada:
+atbr <- atbr[atbr$province_state %in% c("New Brunswick", "", "Prince Edward Is.", "Nova Scotia", "Newfoundland"),]
+
+
+# fix those obs with missing bloc info
+
+atbr.missing.blocs <- filter(atbr,
+                             is.na(atbr$BLOC))
+
+atbr$count <- as.numeric(atbr$count)
+
+
+atbr.blocs <- left_join(cw[cw$BLOC %in% cw.int$BLOC,], atbr, by = "BLOC")
+
+
+## Create some summary columns:
+## most_recent_year and max_size
+atbr.sum <- atbr.blocs %>%
+  group_by(BLOC) %>%
+  dplyr::mutate(most_recent_date = max(surveydate, na.rm=T),
+                max_size = max(count, na.rm=T))
+
+## most_recent_year_count
+atbr.sum <- atbr.sum %>%
+  group_by(BLOC) %>%
+  mutate(most_recent_year_count = ifelse(surveydate == most_recent_date, count, NA)) %>%
+  fill(most_recent_year_count, .direction = 'downup')
+
+## max_count_year
+atbr.sum <- atbr.sum %>%
+  group_by(BLOC) %>%
+  mutate(max_count_year = ifelse(count == max_size, surveydate, NA)) %>%
+  fill(max_count_year, .direction = 'downup')
+
 
 ######################
 ##   banding data   ##

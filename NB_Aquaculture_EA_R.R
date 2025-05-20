@@ -161,7 +161,7 @@ bbs.nb <- st_zm(bbs.nb, drop = T, what = "ZM")
 
 #read in coastal blocks shapefile
 
-cw <- st_read(dsn = "Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Waterfowl/Coastal Survey Blocks/Coastal Block Areas.shp")
+cw <- st_read(dsn = "Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/CWS_Atlantic_Coastal_Blocks_SCF_Atlantique_Blocs_Cotiers.gdb")
 
 cw <- st_transform(cw, 4326)
 
@@ -371,6 +371,58 @@ sd <- st_read(dsn = "C:/Users/englishm/Documents/EA/seaDuckKeyHabitatSites_20220
 sd <- st_transform(sd, 4326)
 
 #sd <- filter(sd, label == "South Shore Nova Scotia")
+
+###################
+##   ATBR data   ##
+###################
+
+#excel data
+atbr <- read.csv("C:/Users/EnglishM/Documents/Atlantic Brant/Brant_data_2023-05-11.csv")
+
+atbr <- set_standard_names(atbr)
+
+
+#clean up the atbr data
+
+atbr$first_block <- as.numeric(substr(atbr$blockid, start = 1, stop = 3))
+
+atbr$first_block <- sub("\\,.*", "", atbr$blockid)
+
+atbr$BLOC <- as.numeric(atbr$first_block)
+
+#filter for only atlantic canada:
+atbr <- atbr[atbr$province_state %in% c("New Brunswick", "", "Prince Edward Is.", "Nova Scotia", "Newfoundland"),]
+
+
+# fix those obs with missing bloc info
+
+atbr.missing.blocs <- filter(atbr,
+                             is.na(atbr$BLOC))
+
+atbr$count <- as.numeric(atbr$count)
+
+
+atbr.blocs <- left_join(cw[cw$BLOC %in% cw.int$BLOC,], atbr, by = "BLOC")
+
+
+## Create some summary columns:
+## most_recent_year and max_size
+atbr.sum <- atbr.blocs %>%
+  group_by(BLOC) %>%
+  dplyr::mutate(most_recent_date = max(surveydate, na.rm=T),
+                max_size = max(count, na.rm=T))
+
+## most_recent_year_count
+atbr.sum <- atbr.sum %>%
+  group_by(BLOC) %>%
+  mutate(most_recent_year_count = ifelse(surveydate == most_recent_date, count, NA)) %>%
+  fill(most_recent_year_count, .direction = 'downup')
+
+## max_count_year
+atbr.sum <- atbr.sum %>%
+  group_by(BLOC) %>%
+  mutate(max_count_year = ifelse(count == max_size, surveydate, NA)) %>%
+  fill(max_count_year, .direction = 'downup')
 
 
 ###############################

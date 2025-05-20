@@ -77,7 +77,7 @@ require(DT)
 
 
 #Read in study site KML file 
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Victoria PE/Victoria.kml") # Most recent study site: Victoria PE
+study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Vernon River PE/VernonRiver.kml") # Most recent study site: Victoria PE
 
 study.site <- st_transform(study.site, 4326)
 
@@ -109,7 +109,7 @@ sd <- st_transform(sd, 4326)
 
 #read in coastal blocks shapefile
 
-cw <- st_read(dsn = "Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Waterfowl/Coastal Survey Blocks/Coastal Block Areas.shp")
+cw <- st_read(dsn = "Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/CWS_Atlantic_Coastal_Blocks_SCF_Atlantique_Blocs_Cotiers.gdb")
 
 cw <- st_transform(cw, 4326)
 
@@ -283,7 +283,7 @@ acss.cw.5000 <- st_transform(acss.cw.5000, "+proj=longlat +datum=WGS84")
 
 acss.filter <- st_intersection(acss.sf, acss.cw.5000)
 
-acss.filter <- filter(acss.sf, surveysite %in% c("Victoria", "Victoria Bay"))
+#acss.filter <- filter(acss.sf, surveysite %in% c("Victoria", "Victoria Bay"))
 
 range(as.numeric(acss.filter$obcount))
 
@@ -321,6 +321,60 @@ bago.cws <- filter(bago.cws, Species_Code_EN == "BAGO")
 bago.cws <- st_intersection(bago.cws, cw[cw$BLOC %in% cw.int$BLOC,])
 
 bago.inc <- st_intersection(bago.inc, cw[cw$BLOC %in% cw.int$BLOC,])
+
+
+###################
+##   ATBR data   ##
+###################
+
+#excel data
+atbr <- read.csv("C:/Users/EnglishM/Documents/Atlantic Brant/Brant_data_2023-05-11.csv")
+
+atbr <- set_standard_names(atbr)
+
+
+#clean up the atbr data
+
+atbr$first_block <- as.numeric(substr(atbr$blockid, start = 1, stop = 3))
+
+atbr$first_block <- sub("\\,.*", "", atbr$blockid)
+
+atbr$BLOC <- as.numeric(atbr$first_block)
+
+#filter for only atlantic canada:
+atbr <- atbr[atbr$province_state %in% c("New Brunswick", "", "Prince Edward Is.", "Nova Scotia", "Newfoundland"),]
+
+
+# fix those obs with missing bloc info
+
+atbr.missing.blocs <- filter(atbr,
+                             is.na(atbr$BLOC))
+
+atbr$count <- as.numeric(atbr$count)
+
+
+atbr.blocs <- left_join(cw[cw$BLOC %in% cw.int$BLOC,], atbr, by = "BLOC")
+
+
+## Create some summary columns:
+## most_recent_year and max_size
+atbr.sum <- atbr.blocs %>%
+  group_by(BLOC) %>%
+  dplyr::mutate(most_recent_date = max(surveydate, na.rm=T),
+                max_size = max(count, na.rm=T))
+
+## most_recent_year_count
+atbr.sum <- atbr.sum %>%
+  group_by(BLOC) %>%
+  mutate(most_recent_year_count = ifelse(surveydate == most_recent_date, count, NA)) %>%
+  fill(most_recent_year_count, .direction = 'downup')
+
+## max_count_year
+atbr.sum <- atbr.sum %>%
+  group_by(BLOC) %>%
+  mutate(max_count_year = ifelse(count == max_size, surveydate, NA)) %>%
+  fill(max_count_year, .direction = 'downup')
+
 
 
 ########################
@@ -431,7 +485,7 @@ server <- function(input, output, session) {
                 opacity = 1,
                 weight = 1,
                 #group = "Dataset",
-                popup = popupTable(cw.int, zcol = c("BLOC", "NAME", "DESCRIPTIO"), row.numbers = F, feature.id = F)) %>%
+                popup = popupTable(cw.int, zcol = c("BLOC", "NAME_NOM"), row.numbers = F, feature.id = F)) %>%
     
     
     addPolygons(data = study.site,
@@ -442,21 +496,21 @@ server <- function(input, output, session) {
                 #group = "Dataset",
                 #popup = popupTable(df.300)) %>%
     
-    addPolygons(data = ch.atl,
-                color = "blue",
-                fillOpacity = 0.15,
-                opacity = 1,
-                weight = 1,
-                #group = "Dataset",
-                popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
-    
-    addPolylines(data = bbs.pe,
-                 color = "red",
-                 fillOpacity = 0.15,
-                 opacity = 1,
-                 weight = 1,
-                 #group = "Dataset",
-                 popup = popupTable(bbs.pe, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+    # addPolygons(data = ch.atl,
+    #             color = "blue",
+    #             fillOpacity = 0.15,
+    #             opacity = 1,
+    #             weight = 1,
+    #             #group = "Dataset",
+    #             popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+    # 
+    # addPolylines(data = bbs.pe,
+    #              color = "red",
+    #              fillOpacity = 0.15,
+    #              opacity = 1,
+    #              weight = 1,
+    #              #group = "Dataset",
+    #              popup = popupTable(bbs.pe, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
 
     
     addCircleMarkers(data = acss.filter,
