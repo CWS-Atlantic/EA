@@ -17,6 +17,7 @@ require(stringr)
 require(tidyr)
 require(tricky)
 require(DT)
+require(readxl)
 
 
 # #######################################
@@ -118,7 +119,7 @@ require(DT)
 
 
 #read in study site polygon
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Hartlen Point NS/HartlenPoint.kml")
+study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Lunenburg NS/Lunenburg.kml")
 
 study.site <- st_transform(study.site, 4326)
 
