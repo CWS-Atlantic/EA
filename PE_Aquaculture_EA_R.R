@@ -77,7 +77,7 @@ require(DT)
 
 
 #Read in study site KML file 
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Vernon River PE/VernonRiver.kml") # Most recent study site: Victoria PE
+study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Egmont Bay PE/EgmontBay.kml") # Most recent study site: Victoria PE
 
 study.site <- st_transform(study.site, 4326)
 
