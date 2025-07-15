@@ -72,20 +72,20 @@ df.5000 <- st_transform(df.5000, 4326) #CRS 4326 for this (UTM Zone 20)
 study.site <- df.5000
 
 
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Neguac NB/NeguacSpat.kml")
+study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Centre Village NB/CentreVillage.kml")
 
 study.site <- st_transform(study.site, 4326)
 
 #drop the 3D field from the google earth shapefile
 study.site <- st_zm(study.site, drop = T, what = "ZM")
 
-#buffer the study site by 300m for Rachel's request
-study.site <- st_transform(study.site, crs = "+proj=utm +zone=20")
-
-study.site <- st_buffer(study.site, dist = 300)
-
-#transform back to lat-lon
-study.site <- st_transform(study.site, 4326)
+# #buffer the study site by 300m for Rachel's request
+# study.site <- st_transform(study.site, crs = "+proj=utm +zone=20")
+# 
+# study.site <- st_buffer(study.site, dist = 300)
+#
+# #transform back to lat-lon
+# study.site <- st_transform(study.site, 4326)
 
 
 atl <- st_read(dsn = "C:/Users/englishm/Documents/EA/Data/Atlantic_Region.kml")
@@ -137,7 +137,7 @@ ews.nb <- st_transform(ews.nb, 4326)
 ##################
 
 #Read in AG plots shapefile
-nb.ag <- st_read("C:/Users/englishm/Documents/EWS/Agricultural Plot Survey/Ag Plot Shape Files/nb_surveyplots2008.shp")
+nb.ag <- st_read("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/Agricultural Lands EWS/Data/2008-2013 Ag Plot Shapefiles/nb_surveyplots2008.shp")
 
 nb.ag <- st_transform(nb.ag, crs = "+proj=longlat +datum=WGS84")
 
@@ -274,6 +274,8 @@ nb.accdc <- filter(nb.accdc,
 nb.accdc <- st_transform(nb.accdc, 4326)
 
 accdc.cw <- st_intersection(nb.accdc, cw[cw$BLOC %in% cw.int$BLOC,])
+
+accdc.filter <- st_intersection(nb.accdc, study.site)
 
 #accdc.cw <- st_intersection(nb.accdc, study.site)
 
@@ -511,43 +513,35 @@ server <- function(input, output, session) {
                 #group = "Dataset",
                 popup = popupTable(study.site, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
     
-    
-    # addPolygons(data = ch.atl,
-    #             color = "blue",
-    #             fillOpacity = 0.15,
-    #             opacity = 1,
-    #             weight = 1,
-    #             #group = "Dataset",
-    #             popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
-    # 
-    addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
-                color = "grey",
+
+    addPolygons(data = ch,
+                color = "blue",
                 fillOpacity = 0.15,
                 opacity = 1,
                 weight = 1,
                 #group = "Dataset",
-                popup = popupTable(cw.int, zcol = c("BLOC", "NAME", "DESCRIPTIO"), row.numbers = F, feature.id = F)) %>%
+                popup = popupTable(ch, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
 
-    addCircleMarkers(data = acss.filter,
-                     #radius = ~log(coei$Total),
-                     lng = acss.filter$longdec,
-                     lat = acss.filter$latdec,
-                     fillOpacity = 0.6,
-                     # fillColor = ~pal(Year), #this calls the colour palette we created above
-                     color = "purple",
-                     weight = 1,
-                     #group = as.character(mydata.sf.m$Year),
-                     popup = popupTable(acss.filter, zcol = c("species", "obcount", "surveysite"), row.numbers = F, feature.id = F)) %>%
+    # addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
+    #             color = "grey",
+    #             fillOpacity = 0.15,
+    #             opacity = 1,
+    #             weight = 1,
+    #             #group = "Dataset",
+    #             popup = popupTable(cw.int, zcol = c("BLOC", "NAME", "DESCRIPTIO"), row.numbers = F, feature.id = F)) %>%
+    # 
+    # addCircleMarkers(data = acss.filter,
+    #                  #radius = ~log(coei$Total),
+    #                  lng = acss.filter$longdec,
+    #                  lat = acss.filter$latdec,
+    #                  fillOpacity = 0.6,
+    #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
+    #                  color = "purple",
+    #                  weight = 1,
+    #                  #group = as.character(mydata.sf.m$Year),
+    #                  popup = popupTable(acss.filter, zcol = c("species", "obcount", "surveysite"), row.numbers = F, feature.id = F)) %>%
 
 
-    addPolygons(data = study.site,
-                color = "grey",
-                fillOpacity = 0.25,
-                opacity = 1,
-                weight = 1) %>% #,
-               #group = "Dataset",
-               #popup = popupTable(mb, zcol = c("Area_ha"), row.numbers = F, feature.id = F)) %>%
-    
     addPolygons(data = ews.nb,
                 color = "purple",
                 fillOpacity = 0.15,
@@ -556,14 +550,14 @@ server <- function(input, output, session) {
                 #group = "Dataset",
                 popup = popupTable(ews.nb, zcol = c("desc_", "plot_id"), row.numbers = F, feature.id = F)) %>%
     
-    # addPolygons(data = nb.ag,
-    #             color = "green",
-    #             fillOpacity = 0.15,
-    #             opacity = 1,
-    #             weight = 1,
-    #             #group = "Dataset",
-    #             popup = popupTable(nb.ag, zcol = c("LABEL"), row.numbers = F, feature.id = F)) %>%
-    
+    addPolygons(data = nb.ag,
+                color = "green",
+                fillOpacity = 0.15,
+                opacity = 1,
+                weight = 1,
+                #group = "Dataset",
+                popup = popupTable(nb.ag, zcol = c("LABEL"), row.numbers = F, feature.id = F)) %>%
+
     
     addPolylines(data = bbs.nb,
                  color = "red",
@@ -573,30 +567,30 @@ server <- function(input, output, session) {
                  #group = "Dataset",
                  popup = popupTable(bbs.nb, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
     
-    addCircleMarkers(data = accdc.cw,
-                     radius = 2,
-                     lng = accdc.cw$LONDEC,
-                     lat = accdc.cw$LATDEC,
-                     fillOpacity = 0.6,
-                     # fillColor = ~pal(Year), #this calls the colour palette we created above
-                     color = "yellow",
-                     weight = 1,
-                     #group = as.character(mydata.sf.m$Year),
-                     popup = popupTable(accdc.cw, zcol = c("COMNAME", "SPROT", "OBDATE"), row.numbers = F, feature.id = F)) %>%
-    
-    
-    addCircleMarkers(data = censuses.sum,
-                     #radius = ~log(coei$Total),
-                     lng = censuses.sum$londec,
-                     lat = censuses.sum$latdec,
-                     fillOpacity = 0.6,
-                     radius = 3,
-                     # fillColor = ~pal(Year), #this calls the colour palette we created above
-                     color = "blue",
-                     weight = 1,
-                     #group = as.character(mydata.sf.m$Year),
-                     popup = popupTable(censuses.sum, zcol = c("colony_name", "most_recent_year", "most_recent_year_count", "max_size"), row.numbers = F, feature.id = F)) %>%
-    
+    # addCircleMarkers(data = accdc.cw,
+    #                  radius = 2,
+    #                  lng = accdc.cw$LONDEC,
+    #                  lat = accdc.cw$LATDEC,
+    #                  fillOpacity = 0.6,
+    #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
+    #                  color = "yellow",
+    #                  weight = 1,
+    #                  #group = as.character(mydata.sf.m$Year),
+    #                  popup = popupTable(accdc.cw, zcol = c("COMNAME", "SPROT", "OBDATE"), row.numbers = F, feature.id = F)) %>%
+    # 
+    # 
+    # addCircleMarkers(data = censuses.sum,
+    #                  #radius = ~log(coei$Total),
+    #                  lng = censuses.sum$londec,
+    #                  lat = censuses.sum$latdec,
+    #                  fillOpacity = 0.6,
+    #                  radius = 3,
+    #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
+    #                  color = "blue",
+    #                  weight = 1,
+    #                  #group = as.character(mydata.sf.m$Year),
+    #                  popup = popupTable(censuses.sum, zcol = c("colony_name", "most_recent_year", "most_recent_year_count", "max_size"), row.numbers = F, feature.id = F)) %>%
+    # 
     
     addDrawToolbar(targetGroup='Selected',
                    polylineOptions=FALSE,
