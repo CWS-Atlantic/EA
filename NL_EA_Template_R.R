@@ -66,7 +66,7 @@ require(DT)
 # study.site <- st_transform(df.1000, 4326) #CRS 4326 for this
 
 
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Lark Harbour NL/LarkHarbour.kml")
+study.site <- st_read(dsn = "C:/Users/EnglishM/Documents/EA/2025/2025 Toqlukutik Green Energy NL/WindFarm_ProjectBoundaries.gdb")
 
 study.site <- st_transform(study.site, 4326)
 
@@ -98,7 +98,7 @@ sd <- st_transform(sd, 4326)
 
 #read in coastal blocks shapefile
 
-cw <- st_read(dsn = "Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Waterfowl/Coastal Survey Blocks/Coastal Block Areas.shp")
+cw <- st_read(dsn = "Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/CWS_Atlantic_Coastal_Blocks_SCF_Atlantique_Blocs_Cotiers.gdb")
 
 cw <- st_transform(cw, 4326)
 
@@ -259,7 +259,7 @@ acss.filter <- st_intersection(acss.sf, acss.cw.5000)
 
 #acss.filter <- filter(acss.sf, site_code %in% c("MBAR", "DABA", "DAPO"))
 
-range(as.numeric(acss.filter$obcount))
+range(as.numeric(acss.filter$obcount),na.rm = T)
 
 unique(acss.filter$species)
 
@@ -365,6 +365,13 @@ nl.marten <- st_transform(nl.marten, 4326)
 # 
 # accdc.cw <- st_intersection(nl.accdc, cw[cw$BLOC %in% cw.int$BLOC,])
 
+#####################
+##   EWS NL Data   ##
+#####################
+
+ews.nl <- st_read("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/Eastern Waterfowl Survey/EWS NL/Data/EWS NL Plots/EWS_NL_Plots.gdb")
+
+ews.nl <- st_transform(ews.nl, 4326)
 
 ###############################
 ##   Create user interface   ##
@@ -452,7 +459,15 @@ server <- function(input, output, session) {
                 opacity = 1,
                 weight = 1,
                 #group = "Dataset",
-                popup = popupTable(cw.int, zcol = c("BLOC", "NAME", "DESCRIPTIO"), row.numbers = F, feature.id = F)) %>%
+                popup = popupTable(cw.int, zcol = c("BLOC", "NAME_NOM"), row.numbers = F, feature.id = F)) %>%
+    
+    addPolygons(data = ews.nl,
+                color = "yellow",
+                fillOpacity = 0.15,
+                opacity = 1,
+                weight = 1,
+                #group = "Dataset",
+                popup = popupTable(ews.nl, zcol = c("plot", "plot_name", "year_added"), row.numbers = F, feature.id = F)) %>%
     
     
     addCircleMarkers(data = acss.filter,
@@ -478,17 +493,17 @@ server <- function(input, output, session) {
                      #group = as.character(mydata.sf.m$Year),
                      popup = popupTable(hard.sf, zcol = c("HADU_total", "PUSA", "year"), row.numbers = F, feature.id = F)) %>%
     
-    # addCircleMarkers(data = coei.sf,
-    #                  #radius = ~log(coei$Total),
-    #                  lng = as.numeric(coei.sf$Longitude),
-    #                  lat = as.numeric(coei.sf$Latitude),
-    #                  fillOpacity = 0.6,
-    #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
-    #                  color = "purple",
-    #                  weight = 1,
-    #                  #group = as.character(mydata.sf.m$Year),
-    #                  popup = popupTable(coei.sf, zcol = c("Species", "White", "Brown", "Unknown", "Total"), row.numbers = F, feature.id = F)) %>%
-    # 
+    addCircleMarkers(data = coei.sf,
+                     #radius = ~log(coei$Total),
+                     lng = as.numeric(coei.sf$Longitude),
+                     lat = as.numeric(coei.sf$Latitude),
+                     fillOpacity = 0.6,
+                     # fillColor = ~pal(Year), #this calls the colour palette we created above
+                     color = "white",
+                     weight = 1,
+                     #group = as.character(mydata.sf.m$Year),
+                     popup = popupTable(coei.sf, zcol = c("Species", "White", "Brown", "Unknown", "Total"), row.numbers = F, feature.id = F)) %>%
+
 
     # addCircleMarkers(data = bago,
     #                  #radius = ~log(coei$Total),
