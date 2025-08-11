@@ -77,7 +77,7 @@ require(DT)
 
 
 #Read in study site KML file 
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Egmont Bay PE/EgmontBay.kml") # Most recent study site: Victoria PE
+study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Monticello PE/Monticello.kml") # Most recent study site: Victoria PE
 
 study.site <- st_transform(study.site, 4326)
 
@@ -375,7 +375,21 @@ atbr.sum <- atbr.sum %>%
   mutate(max_count_year = ifelse(count == max_size, surveydate, NA)) %>%
   fill(max_count_year, .direction = 'downup')
 
+##########################
+##   EWS Ag Plot Data   ##
+##########################
 
+pe.ag <- st_read("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/Agricultural Lands EWS/Data/Processed Data/CWS_Agricultural_Plots_SCF_Parcelles_Agricoles.gdb")
+
+pe.16 <- st_read("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/Agricultural Lands EWS/Data/Processed Data/CWS_PE_Plots_2016_SCF_IPE_Parcelles.gdb")
+
+pe.ag <- st_transform(pe.ag, 4326)
+
+pe.16 <- st_transform(pe.16, 4326)
+
+pe.all <- rbind(pe.ag, pe.16)
+
+pe.all <- filter(pe.all, Province == "IPE_PE")
 
 ########################
 ##   Harlequin Data   ##  # No data for PE!
@@ -496,6 +510,14 @@ server <- function(input, output, session) {
                 #group = "Dataset",
                 #popup = popupTable(df.300)) %>%
     
+    addPolygons(data = pe.all,
+                color = "white",
+                fillOpacity = 0.15,
+                opacity = 1,
+                weight = 1,
+                #group = "Dataset",
+                popup = popupTable(pe.all, zcol = c("Plot_Parcelle"), row.numbers = F, feature.id = F)) %>%
+    
     # addPolygons(data = ch.atl,
     #             color = "blue",
     #             fillOpacity = 0.15,
@@ -504,13 +526,13 @@ server <- function(input, output, session) {
     #             #group = "Dataset",
     #             popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
     # 
-    # addPolylines(data = bbs.pe,
-    #              color = "red",
-    #              fillOpacity = 0.15,
-    #              opacity = 1,
-    #              weight = 1,
-    #              #group = "Dataset",
-    #              popup = popupTable(bbs.pe, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+    addPolylines(data = bbs.pe,
+                 color = "red",
+                 fillOpacity = 0.15,
+                 opacity = 1,
+                 weight = 1,
+                 #group = "Dataset",
+                 popup = popupTable(bbs.pe, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
 
     
     addCircleMarkers(data = acss.filter,
@@ -537,43 +559,43 @@ server <- function(input, output, session) {
                      popup = popupTable(accdc.cw, zcol = c("COMNAME", "SPROT", "OBDATE"), row.numbers = F, feature.id = F)) %>%
     
 
-    addCircleMarkers(data = bago.inc,
-                     #radius = ~log(coei$Total),
-                     lng = bago.inc$long_,
-                     lat = bago.inc$lat,
-                     fillOpacity = 0.6,
-                     # fillColor = ~pal(Year), #this calls the colour palette we created above
-                     color = "black",
-                     weight = 1,
-                     #group = as.character(mydata.sf.m$Year),
-                     popup = popupTable(bago.inc, zcol = c("Location", "Total", "Survey_Type"), row.numbers = F, feature.id = F)) %>%
-    
-    
-    addCircleMarkers(data = bago.cws,
-                     #radius = ~log(coei$Total),
-                     lng = bago.cws$long,
-                     lat = bago.cws$lat,
-                     fillOpacity = 0.6,
-                     # fillColor = ~pal(Year), #this calls the colour palette we created above
-                     color = "black",
-                     weight = 1,
-                     #group = as.character(mydata.sf.m$Year),
-                     popup = popupTable(bago.cws, zcol = c("Year", "Total"), row.numbers = F, feature.id = F)) %>%
-    
-
-
-    addCircleMarkers(data = censuses.sum,
-                     #radius = ~log(coei$Total),
-                     lng = censuses.sum$londec,
-                     lat = censuses.sum$latdec,
-                     fillOpacity = 0.6,
-                     radius = 3,
-                     # fillColor = ~pal(Year), #this calls the colour palette we created above
-                     color = "blue",
-                     weight = 1,
-                     #group = as.character(mydata.sf.m$Year),
-                     popup = popupTable(censuses.sum, zcol = c( "Census_Year", "Species_code", "most_recent_year", "most_recent_year_count", "max_count_year", "max_size"), row.numbers = F, feature.id = F)) %>%
-    
+    # addCircleMarkers(data = bago.inc,
+    #                  #radius = ~log(coei$Total),
+    #                  lng = bago.inc$long_,
+    #                  lat = bago.inc$lat,
+    #                  fillOpacity = 0.6,
+    #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
+    #                  color = "black",
+    #                  weight = 1,
+    #                  #group = as.character(mydata.sf.m$Year),
+    #                  popup = popupTable(bago.inc, zcol = c("Location", "Total", "Survey_Type"), row.numbers = F, feature.id = F)) %>%
+    # 
+    # 
+    # addCircleMarkers(data = bago.cws,
+    #                  #radius = ~log(coei$Total),
+    #                  lng = bago.cws$long,
+    #                  lat = bago.cws$lat,
+    #                  fillOpacity = 0.6,
+    #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
+    #                  color = "black",
+    #                  weight = 1,
+    #                  #group = as.character(mydata.sf.m$Year),
+    #                  popup = popupTable(bago.cws, zcol = c("Year", "Total"), row.numbers = F, feature.id = F)) %>%
+    # 
+# 
+# 
+#     addCircleMarkers(data = censuses.sum,
+#                      #radius = ~log(coei$Total),
+#                      lng = censuses.sum$londec,
+#                      lat = censuses.sum$latdec,
+#                      fillOpacity = 0.6,
+#                      radius = 3,
+#                      # fillColor = ~pal(Year), #this calls the colour palette we created above
+#                      color = "blue",
+#                      weight = 1,
+#                      #group = as.character(mydata.sf.m$Year),
+#                      popup = popupTable(censuses.sum, zcol = c( "Census_Year", "Species_code", "most_recent_year", "most_recent_year_count", "max_count_year", "max_size"), row.numbers = F, feature.id = F)) %>%
+#     
     
     
     # 
