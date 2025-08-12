@@ -10,6 +10,7 @@ require(leafpop)
 require(mapedit)
 require(miniUI)
 require(readr)
+require(readxl)
 require(sf)
 require(shiny)
 require(shinyWidgets)
@@ -195,6 +196,10 @@ censuses.sum <- select(censuses.sum,
 #join both tables by ColonyId
 censuses.sum <- left_join(colonies.cw, censuses.sum, by = "ColonyId")
 
+unique(censuses.sum$Species_code)
+
+range(censuses.sum$most_recent_year_count, na.rm = T)
+
 ## write CSV
 #write.csv(censuses.sum, "CWS_Atlantic_Waterbird_Colonies_2025.csv", row.names = F)
 
@@ -230,7 +235,6 @@ ch.atl <- st_intersection(ch, atl)
 ##  ACSS     ##
 ###############
 
-require(readxl)
 acss <- read_xlsx("Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Shorebirds/ACSS data 1971-2023_29-08-2024.xlsx", 1)
 
 
@@ -262,6 +266,8 @@ acss.filter <- st_intersection(acss.sf, acss.cw.5000)
 range(as.numeric(acss.filter$obcount),na.rm = T)
 
 unique(acss.filter$species)
+
+unique(acss.filter$surveysite)
 
 # write.csv(acss.filter, 
 #           "BayOfIslands_ACSS_Filter.csv",
@@ -304,7 +310,7 @@ hard.sf <- st_as_sf(hard,
 
 hard.sf <- st_intersection(hard.sf, cw[cw$BLOC %in% cw.int$BLOC,])
 
-
+sum(as.numeric(hard.sf$PUSA), na.rm=T)
 #write.csv(hard.sf, "Harlequin_Duck_Purple_Sandpiper_Maces_Bay.csv")
 
 
@@ -548,15 +554,15 @@ server <- function(input, output, session) {
                  popup = popupTable(bbs.nl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
       
     
-    # addPolygons(data = ch.atl,
-    #               color = "blue",
-    #               fillOpacity = 0.15,
-    #               opacity = 1,
-    #               weight = 1,
-    #               #group = "Dataset",
-    #               popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
-    # 
-  
+    addPolygons(data = ch.atl,
+                  color = "blue",
+                  fillOpacity = 0.15,
+                  opacity = 1,
+                  weight = 1,
+                  #group = "Dataset",
+                  popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+
+
     addDrawToolbar(targetGroup='Selected',
                    polylineOptions = FALSE,
                    markerOptions = FALSE,
