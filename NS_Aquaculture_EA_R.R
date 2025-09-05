@@ -119,7 +119,7 @@ require(readxl)
 
 
 #read in study site polygon
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Lunenburg NS/Lunenburg.kml")
+study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Grand Pre NS/GrandPre.kml")
 
 study.site <- st_transform(study.site, 4326)
 
@@ -422,6 +422,18 @@ atbr.sum <- atbr.sum %>%
   fill(max_count_year, .direction = 'downup')
 
 
+#####################
+##   BBS Surveys   ##
+#####################
+
+#NS surveys
+bbs.ns <- st_read("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Landbirds/Breeding Bird Survey_ATL/NS_Active BBS routes.gdb")
+
+bbs.ns <- st_transform(bbs.ns, 4326)
+
+bbs.ns <- st_zm(bbs.ns, drop = T, what = "ZM")
+
+
 ######################
 ##   banding data   ##
 ######################
@@ -561,6 +573,14 @@ server <- function(input, output, session) {
                 weight = 1,
                 #group = "Dataset",
                 popup = popupTable(cw.int, zcol = c("BLOC", "NAME_NOM"), row.numbers = F, feature.id = F)) %>%
+    
+    addPolylines(data = bbs.ns,
+                 color = "pink",
+                 fillOpacity = 0.15,
+                 opacity = 1,
+                 weight = 2,
+                 #group = "Dataset",
+                 popup = popupTable(bbs.ns, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
     
     
     addCircleMarkers(data = acss.filter,
