@@ -309,10 +309,11 @@ acss.filter <- st_intersection(acss.sf, acss.cw.5000)
 
 #acss.filter <- filter(acss.sf, site_code %in% c("HNPT"))
 
-range(as.numeric(acss.filter$obcount))
+range(as.numeric(acss.filter$obcount), na.rm=T)
 
 unique(acss.filter$species)
 
+unique(acss.filter$surveysite)
 
 ###############
 ##   ACCDC   ##
@@ -574,14 +575,14 @@ server <- function(input, output, session) {
                 #group = "Dataset",
                 popup = popupTable(cw.int, zcol = c("BLOC", "NAME_NOM"), row.numbers = F, feature.id = F)) %>%
     
-    addPolylines(data = bbs.ns,
-                 color = "pink",
-                 fillOpacity = 0.15,
-                 opacity = 1,
-                 weight = 2,
-                 #group = "Dataset",
-                 popup = popupTable(bbs.ns, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
-    
+    # addPolylines(data = bbs.ns,
+    #              color = "pink",
+    #              fillOpacity = 0.15,
+    #              opacity = 1,
+    #              weight = 2,
+    #              #group = "Dataset",
+    #              popup = popupTable(bbs.ns, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+    # 
     
     addCircleMarkers(data = acss.filter,
                      #radius = ~log(coei$Total),
