@@ -235,7 +235,7 @@ ch.atl <- st_intersection(ch, atl)
 ##  ACSS     ##
 ###############
 
-acss <- read_xlsx("Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Shorebirds/ACSS data 1971-2023_29-08-2024.xlsx", 1)
+acss <- read_xlsx("Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Shorebirds/ACSS data 1971-2024_2024-07-16.xlsx", 1)
 
 
 acss <- set_standard_names(acss)

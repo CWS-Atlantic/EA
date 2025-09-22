@@ -282,7 +282,7 @@ ch.study.site <- st_intersection(ch, cw[cw$BLOC %in% cw.int$BLOC,])
 ############
 
 require(readxl)
-acss <- read_xlsx("Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Shorebirds/ACSS data 1971-2023_29-08-2024.xlsx", 1)
+acss <- read_xlsx("Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Shorebirds/ACSS data 1971-2024_2024-07-16.xlsx", 1)
 
 
 acss <- set_standard_names(acss)
@@ -314,6 +314,20 @@ range(as.numeric(acss.filter$obcount), na.rm=T)
 unique(acss.filter$species)
 
 unique(acss.filter$surveysite)
+
+
+##########################
+##   SESA Survey Data   ##
+##########################
+
+sesa <- read.csv("C:/Users/EnglishM/Documents/Shorebirds/For Publication/SESA_Aerial_Survey_1976_2024.csv")
+
+sesa.sf <- st_as_sf(sesa, 
+                    coords = c("Longitude", "Latitude"), 
+                    crs = 4326, 
+                    agr = "constant", 
+                    remove = FALSE,
+                    na.fail = F)
 
 ###############
 ##   ACCDC   ##
