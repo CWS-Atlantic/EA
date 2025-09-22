@@ -42,37 +42,37 @@ require(readxl)
 ##   load in  study area data   ##
 ##################################
 
-#create polygon out of point coordinates and buffer:
-#
-# #NB Sipu Wind
-#
-df <- data.frame(
-  lat = 45.649006,
-  lon = -65.209262
-)
+# #create polygon out of point coordinates and buffer:
+# #
+# # #NB Sipu Wind
+# #
+# df <- data.frame(
+#   lat = 45.649006,
+#   lon = -65.209262
+# )
+# 
+# df.sf <- df %>%
+#   st_as_sf(coords = c("lon", "lat"))%>%
+#   st_set_crs(4326)
+# 
+# df.utm <- st_transform(df.sf, 32620) #CRS 32620 for this
+# 
+# #buffer by 5000m 
+# df.5000 <- st_buffer(df.utm, dist = 5000)
+# 
+# #turn to polygon:
+# df.5000 <- df.5000 %>%
+#   summarise(geometry = st_combine(geometry)) %>%
+#   st_cast("POLYGON")
+# 
+# #transform back to lat/lon
+# df.5000 <- st_transform(df.5000, 4326) #CRS 4326 for this (UTM Zone 20)
+# 
+# 
+# study.site <- df.5000
 
-df.sf <- df %>%
-  st_as_sf(coords = c("lon", "lat"))%>%
-  st_set_crs(4326)
-
-df.utm <- st_transform(df.sf, 32620) #CRS 32620 for this
-
-#buffer by 5000m 
-df.5000 <- st_buffer(df.utm, dist = 5000)
-
-#turn to polygon:
-df.5000 <- df.5000 %>%
-  summarise(geometry = st_combine(geometry)) %>%
-  st_cast("POLYGON")
-
-#transform back to lat/lon
-df.5000 <- st_transform(df.5000, 4326) #CRS 4326 for this (UTM Zone 20)
-
-
-study.site <- df.5000
-
-
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Centre Village NB/CentreVillage.kml")
+#read in study site via shapegile
+study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Restigouche NB/RESCOL_StudyArea/RESCOL_StudyArea_20250818.shp")
 
 study.site <- st_transform(study.site, 4326)
 
@@ -137,7 +137,7 @@ ews.nb <- st_transform(ews.nb, 4326)
 ##################
 
 #Read in AG plots shapefile
-nb.ag <- st_read("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/Agricultural Lands EWS/Data/2008-2013 Ag Plot Shapefiles/nb_surveyplots2008.shp")
+nb.ag <- st_read("C:/Users/EnglishM/Documents/EWS/Agricultural Plot Survey/For Publication/CWS_Agricultural_Plots_SCF_Parcelles_Agricoles.gdb")
 
 nb.ag <- st_transform(nb.ag, crs = "+proj=longlat +datum=WGS84")
 
@@ -152,7 +152,6 @@ bbs.nb <- st_read("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Landbirds/Breeding Bi
 bbs.nb <- st_transform(bbs.nb, 4326)
 
 bbs.nb <- st_zm(bbs.nb, drop = T, what = "ZM")
-
 
 
 #################################
@@ -286,7 +285,7 @@ unique(accdc.cw$COMNAME)
 ##  ACSS  ##
 ############
 
-acss <- read_xlsx("Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Shorebirds/ACSS data 1971-2023_29-08-2024.xlsx", 1)
+acss <- read_xlsx("Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Shorebirds/ACSS data 1971-2024_2024-07-16.xlsx", 1)
 
 acss <- set_standard_names(acss)
 
@@ -302,8 +301,17 @@ acss.sf <- acss %>%
 
 acss.cw <- st_transform(cw[cw$BLOC %in% cw.int$BLOC,], "+proj=utm +zone=20 +datum=WGS84") #NB is split between zones 20 (east) and 19 (west)
 
-acss.study.site <- st_intersection(acss.sf, study.site)
-
+# buffer study site for inland areas
+# study.site.5000 <- st_transform(study.site, "+proj=utm +zone=20 +datum=WGS84") #NB is split between zones 20 (east) and 19 (west)
+# 
+# #buffer the study site by 5000m
+# study.site.5000 <- st_buffer(study.site.5000, dist = 20000)
+# 
+# #convert back to lat-lon
+# study.site.5000 <- st_transform(study.site.5000, 4326)
+# 
+# acss.study.site <- st_intersection(acss.sf, study.site.5000)
+# 
 #lb.out <- st_cast(lb.out,"MULTILINESTRING")
 
 #make the 5000m buffer
@@ -374,6 +382,19 @@ sd <- st_transform(sd, 4326)
 
 #sd <- filter(sd, label == "South Shore Nova Scotia")
 
+##########################
+##   SESA Survey Data   ##
+##########################
+
+sesa <- read.csv("C:/Users/EnglishM/Documents/Shorebirds/For Publication/SESA_Aerial_Survey_1976_2024.csv")
+
+sesa.sf <- st_as_sf(sesa, 
+                    coords = c("Longitude", "Latitude"), 
+                    crs = 4326, 
+                    agr = "constant", 
+                    remove = FALSE,
+                    na.fail = F)
+
 ###################
 ##   ATBR data   ##
 ###################
@@ -404,8 +425,8 @@ atbr.missing.blocs <- filter(atbr,
 atbr$count <- as.numeric(atbr$count)
 
 
-atbr.blocs <- left_join(cw[cw$BLOC %in% cw.int$BLOC,], atbr, by = "BLOC")
-
+#atbr.blocs <- left_join(cw[cw$BLOC %in% cw.int$BLOC,], atbr, by = "BLOC")
+#atbr.blocs <- left_join(cw, atbr, by = "BLOC")
 
 ## Create some summary columns:
 ## most_recent_year and max_size
@@ -550,13 +571,13 @@ server <- function(input, output, session) {
                 #group = "Dataset",
                 popup = popupTable(ews.nb, zcol = c("desc_", "plot_id"), row.numbers = F, feature.id = F)) %>%
     
-    addPolygons(data = nb.ag,
+    addPolygons(data = nb.ag[nb.ag$Province == "NB",],
                 color = "green",
                 fillOpacity = 0.15,
                 opacity = 1,
                 weight = 1,
                 #group = "Dataset",
-                popup = popupTable(nb.ag, zcol = c("LABEL"), row.numbers = F, feature.id = F)) %>%
+                popup = popupTable(nb.ag, zcol = c("Plot_Parcelle"), row.numbers = F, feature.id = F)) %>%
 
     
     addPolylines(data = bbs.nb,
@@ -567,17 +588,17 @@ server <- function(input, output, session) {
                  #group = "Dataset",
                  popup = popupTable(bbs.nb, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
     
-    # addCircleMarkers(data = accdc.cw,
-    #                  radius = 2,
-    #                  lng = accdc.cw$LONDEC,
-    #                  lat = accdc.cw$LATDEC,
-    #                  fillOpacity = 0.6,
-    #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
-    #                  color = "yellow",
-    #                  weight = 1,
-    #                  #group = as.character(mydata.sf.m$Year),
-    #                  popup = popupTable(accdc.cw, zcol = c("COMNAME", "SPROT", "OBDATE"), row.numbers = F, feature.id = F)) %>%
-    # 
+    addCircleMarkers(data = accdc.filter,
+                     radius = 2,
+                     lng = accdc.filter$LONDEC,
+                     lat = accdc.filter$LATDEC,
+                     fillOpacity = 0.6,
+                     # fillColor = ~pal(Year), #this calls the colour palette we created above
+                     color = "yellow",
+                     weight = 1,
+                     #group = as.character(mydata.sf.m$Year),
+                     popup = popupTable(accdc.filter, zcol = c("COMNAME", "SPROT", "OBDATE"), row.numbers = F, feature.id = F)) %>%
+
     # 
     # addCircleMarkers(data = censuses.sum,
     #                  #radius = ~log(coei$Total),
