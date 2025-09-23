@@ -67,7 +67,7 @@ require(DT)
 # study.site <- st_transform(df.1000, 4326) #CRS 4326 for this
 
 
-study.site <- st_read(dsn = "C:/Users/EnglishM/Documents/EA/2025/2025 Toqlukutik Green Energy NL/WindFarm_ProjectBoundaries.gdb")
+study.site <- st_read(dsn = "C:/Users/EnglishM/Documents/EA/2025/2025 St Lawrence NL/StLawrence.kml")
 
 study.site <- st_transform(study.site, 4326)
 
@@ -88,7 +88,7 @@ atl <- st_make_valid(atl)
 ### Seaduck Key Sites   ##
 ##########################
 
-sd <- st_read(dsn = "C:/Users/englishm/Documents/EA/seaDuckKeyHabitatSites_20220316.shp")
+sd <- st_read(dsn = "C:/Users/englishm/Documents/EA/Data/seaDuckKeyHabitatSites_20220316.shp")
 
 sd <- st_transform(sd, 4326)
 
@@ -199,6 +199,8 @@ censuses.sum <- left_join(colonies.cw, censuses.sum, by = "ColonyId")
 unique(censuses.sum$Species_code)
 
 range(censuses.sum$most_recent_year_count, na.rm = T)
+
+unique(censuses.sum$colony_name)
 
 ## write CSV
 #write.csv(censuses.sum, "CWS_Atlantic_Waterbird_Colonies_2025.csv", row.names = F)
@@ -467,14 +469,14 @@ server <- function(input, output, session) {
                 #group = "Dataset",
                 popup = popupTable(cw.int, zcol = c("BLOC", "NAME_NOM"), row.numbers = F, feature.id = F)) %>%
     
-    addPolygons(data = ews.nl,
-                color = "yellow",
-                fillOpacity = 0.15,
-                opacity = 1,
-                weight = 1,
-                #group = "Dataset",
-                popup = popupTable(ews.nl, zcol = c("plot", "plot_name", "year_added"), row.numbers = F, feature.id = F)) %>%
-    
+    # addPolygons(data = ews.nl,
+    #             color = "yellow",
+    #             fillOpacity = 0.15,
+    #             opacity = 1,
+    #             weight = 1,
+    #             #group = "Dataset",
+    #             popup = popupTable(ews.nl, zcol = c("plot", "plot_name", "year_added"), row.numbers = F, feature.id = F)) %>%
+    # 
     
     addCircleMarkers(data = acss.filter,
                      #radius = ~log(coei$Total),
@@ -536,15 +538,15 @@ server <- function(input, output, session) {
                      popup = popupTable(censuses.sum, zcol = c("colony_name", "most_recent_year", "most_recent_year_count", "max_size"), row.numbers = F, feature.id = F)) %>%
 
 
-    # addPolygons(data = sd,
-    #             color = "blue",
-    #             fillOpacity = 0.15,
-    #             opacity = 1,
-    #             weight = 1,
-    #             #group = "Dataset",
-    #             popup = popupTable(sd, zcol = c("label", "region"), row.numbers = F, feature.id = F)) %>%
-    # 
-    
+    addPolygons(data = sd,
+                color = "blue",
+                fillOpacity = 0.15,
+                opacity = 1,
+                weight = 1,
+                #group = "Dataset",
+                popup = popupTable(sd, zcol = c("label", "region"), row.numbers = F, feature.id = F)) %>%
+
+
     addPolylines(data = bbs.nl,
                  color = "pink",
                  fillOpacity = 0.15,
@@ -554,13 +556,13 @@ server <- function(input, output, session) {
                  popup = popupTable(bbs.nl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
       
     
-    addPolygons(data = ch.atl,
+    addPolygons(data = ch,
                   color = "blue",
                   fillOpacity = 0.15,
                   opacity = 1,
                   weight = 1,
                   #group = "Dataset",
-                  popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+                  popup = popupTable(ch, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
 
 
     addDrawToolbar(targetGroup='Selected',
