@@ -92,6 +92,9 @@ sd <- st_read(dsn = "C:/Users/englishm/Documents/EA/Data/seaDuckKeyHabitatSites_
 
 sd <- st_transform(sd, 4326)
 
+#subset for Eastern and Atlantic Canada:
+
+sd <- sd[sd$region %in% c("Atlantic Canada and Quebec"),]
 
 #################################
 ##   coastal block waterfowl   ##

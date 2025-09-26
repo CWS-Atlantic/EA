@@ -97,6 +97,19 @@ atl <- st_zm(atl, drop = T, what = "ZM")
 atl <- st_make_valid(atl)
 
 
+#########################
+### Seaduck Key Sites  ##
+#########################
+
+sd <- st_read(dsn = "C:/Users/englishm/Documents/EA/seaDuckKeyHabitatSites_20220316.shp")
+
+sd <- st_transform(sd, 4326)
+
+#subset for Eastern and Atlantic Canada:
+
+sd <- sd[sd$region %in% c("Atlantic Canada and Quebec"),]
+
+
 #################
 ##   CH DATA   ##
 #################
