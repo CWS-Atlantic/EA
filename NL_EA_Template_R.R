@@ -67,7 +67,7 @@ require(DT)
 # study.site <- st_transform(df.1000, 4326) #CRS 4326 for this
 
 
-study.site <- st_read(dsn = "C:/Users/EnglishM/Documents/EA/2025/2025 St Lawrence NL/StLawrence.kml")
+study.site <- st_read(dsn = "C:/Users/EnglishM/Documents/EA/2025/2025 FWMP NL/FWMP_2025_DS_Pts/FWMP_2025_DS_Plys.shp")
 
 study.site <- st_transform(study.site, 4326)
 
@@ -266,13 +266,16 @@ acss.cw.5000 <- st_transform(acss.cw.5000, "+proj=longlat +datum=WGS84")
 
 acss.filter <- st_intersection(acss.sf, acss.cw.5000)
 
-#acss.filter <- filter(acss.sf, site_code %in% c("MBAR", "DABA", "DAPO"))
+acss.filter <- st_intersection(acss.sf, cw[cw$BLOC %in% cw.int$BLOC,],)
+
+# #subset within filtered data
+# acss.filter <- filter(acss.sf, site_code %in% c("MBAR", "DABA", "DAPO"))
 
 range(as.numeric(acss.filter$obcount),na.rm = T)
 
-unique(acss.filter$species)
+length(unique(acss.filter$species))
 
-unique(acss.filter$surveysite)
+length(unique(acss.filter$surveysite))
 
 # write.csv(acss.filter, 
 #           "BayOfIslands_ACSS_Filter.csv",
@@ -462,7 +465,7 @@ server <- function(input, output, session) {
                 opacity = 1,
                 weight = 1,
                 #group = "Dataset",
-                popup = popupTable(study.site, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+                popup = popupTable(study.site, zcol = c("Site_Name"), row.numbers = F, feature.id = F)) %>%
     
     addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
                 color = "red",
@@ -516,18 +519,17 @@ server <- function(input, output, session) {
                      popup = popupTable(coei.sf, zcol = c("Species", "White", "Brown", "Unknown", "Total"), row.numbers = F, feature.id = F)) %>%
 
 
-    # addCircleMarkers(data = bago,
-    #                  #radius = ~log(coei$Total),
-    #                  lng = bago$long_,
-    #                  lat = bago$lat,
-    #                  fillOpacity = 0.6,
-    #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
-    #                  color = "black",
-    #                  weight = 1,
-    #                  #group = as.character(mydata.sf.m$Year),
-    #                  popup = popupTable(bago, zcol = c("location", "total", "survey_type"), row.numbers = F, feature.id = F)) %>%
-    # 
-    
+    addCircleMarkers(data = bago.inc,
+                     radius = ~log(bago.inc$Total),
+                     lng = bago.inc$long_,
+                     lat = bago.inc$lat,
+                     fillOpacity = 0.6,
+                     # fillColor = ~pal(Year), #this calls the colour palette we created above
+                     color = "black",
+                     weight = 1,
+                     popup = popupTable(bago.inc, zcol = c("Year_", "Total"), row.numbers = F, feature.id = F)) %>%
+
+
     addCircleMarkers(data = censuses.sum,
                      #radius = ~log(coei$Total),
                      lng = censuses.sum$londec,
@@ -542,7 +544,7 @@ server <- function(input, output, session) {
 
 
     addPolygons(data = sd,
-                color = "blue",
+                color = "pink",
                 fillOpacity = 0.15,
                 opacity = 1,
                 weight = 1,
@@ -550,22 +552,22 @@ server <- function(input, output, session) {
                 popup = popupTable(sd, zcol = c("label", "region"), row.numbers = F, feature.id = F)) %>%
 
 
-    addPolylines(data = bbs.nl,
-                 color = "pink",
-                 fillOpacity = 0.15,
-                 opacity = 1,
-                 weight = 2,
-                 #group = "Dataset",
-                 popup = popupTable(bbs.nl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
-      
+    # addPolylines(data = bbs.nl,
+    #              color = "pink",
+    #              fillOpacity = 0.15,
+    #              opacity = 1,
+    #              weight = 2,
+    #              #group = "Dataset",
+    #              popup = popupTable(bbs.nl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+    #   
     
-    addPolygons(data = ch,
+    addPolygons(data = ch.atl,
                   color = "blue",
                   fillOpacity = 0.15,
                   opacity = 1,
                   weight = 1,
                   #group = "Dataset",
-                  popup = popupTable(ch, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+                  popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
 
 
     addDrawToolbar(targetGroup='Selected',
