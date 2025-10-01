@@ -67,7 +67,7 @@ require(DT)
 # study.site <- st_transform(df.1000, 4326) #CRS 4326 for this
 
 
-study.site <- st_read(dsn = "C:/Users/EnglishM/Documents/EA/2025/2025 FWMP NL/FWMP_2025_DS_Pts/FWMP_2025_DS_Plys.shp")
+study.site <- st_read(dsn = "C:/Users/EnglishM/Documents/EA/2025/2025 FWMP NL/FWMP_2025_DS_Pts/FWMP_2025_DS_Pts.shp")
 
 study.site <- st_transform(study.site, 4326)
 
@@ -83,6 +83,44 @@ atl <- st_zm(atl, drop = T, what = "ZM")
 
 atl <- st_make_valid(atl)
 
+########################
+##  Read in UTM Grid  ##
+########################
+
+utm <- st_read("C:/Users/EnglishM/Documents/EWS/UTM.gdb")
+
+utm <- st_transform(utm, 4326)
+
+#add UTM zone to study.site
+study.site <- st_intersection(study.site, utm)
+
+#now buffer each site by 300m after being converted to UTM
+
+study.site.20 <- st_transform(study.site[study.site$ZONE == 20,], "+proj=utm +zone=20 +datum=WGS84") 
+
+study.site.21 <- st_transform(study.site[study.site$ZONE == 21,], "+proj=utm +zone=21 +datum=WGS84") 
+
+study.site.22 <- st_transform(study.site[study.site$ZONE == 22,], "+proj=utm +zone=22 +datum=WGS84") 
+
+#make the 300m buffer
+study.site.20 <- st_buffer(study.site.20, dist = 5000)
+
+study.site.21 <- st_buffer(study.site.21, dist = 5000)
+
+study.site.22 <- st_buffer(study.site.22, dist = 5000)
+
+#reproject to lat-lon
+study.site.20 <- st_transform(study.site.20, "+proj=longlat +datum=WGS84")
+
+study.site.21 <- st_transform(study.site.21, "+proj=longlat +datum=WGS84")
+
+study.site.22 <- st_transform(study.site.22, "+proj=longlat +datum=WGS84")
+
+#recreate df
+
+study.site <- rbind(study.site.20,
+                    study.site.21,
+                    study.site.22)
 
 ##########################
 ### Seaduck Key Sites   ##
@@ -134,6 +172,16 @@ colonies <- read_csv(file = "C:/Users/englishm/Documents/EA/Data/Colonial_Waterb
 
 censuses <- read_csv(file = "C:/Users/englishm/Documents/EA/Data/Colonial_Waterbird_Census_2024.csv")
 
+
+Encoding( x = colonies$colony_name ) <- "UTF-8"
+
+# replace all non UTF-8 character strings with an empty space
+colonies$colony_name <-
+  iconv( x = colonies$colony_name
+         , from = "UTF-8"
+         , to = "UTF-8"
+         , sub = "" )
+
 #spatial colonies, subset census based on colonies in coastal block
 
 colonies <- set_standard_names(colonies)
@@ -147,9 +195,8 @@ colonies <- colonies %>%
 #Filter to coastal block
 colonies.cw <- st_intersection(colonies, cw[cw$BLOC %in% cw.int$BLOC,])
 
-
-## Filter to study site if you need to
-# colonial.birds.study.site <- st_intersection(colonial.birds, study.site)
+# # Filter to study site if you need to
+# colonial.birds.study.site <- st_intersection(colonies, study.site)
 
 #subset censuses based on coastal block
 censuses.cw <- filter(censuses,
@@ -204,6 +251,9 @@ unique(censuses.sum$Species_code)
 range(censuses.sum$most_recent_year_count, na.rm = T)
 
 unique(censuses.sum$colony_name)
+
+#filter for Leach's Storm Petrel
+censuses.sum.lesp <- censuses.sum[censuses.sum$Species_code == "LESP",]
 
 ## write CSV
 #write.csv(censuses.sum, "CWS_Atlantic_Waterbird_Colonies_2025.csv", row.names = F)
@@ -264,21 +314,25 @@ acss.cw.5000 <- st_buffer(acss.cw, dist = 5000)
 
 acss.cw.5000 <- st_transform(acss.cw.5000, "+proj=longlat +datum=WGS84")
 
-acss.filter <- st_intersection(acss.sf, acss.cw.5000)
+#acss.filter <- st_intersection(acss.sf, acss.cw.5000)
 
 acss.filter <- st_intersection(acss.sf, cw[cw$BLOC %in% cw.int$BLOC,],)
+
+acss.study.site <- st_intersection(acss.sf, study.site)
 
 # #subset within filtered data
 # acss.filter <- filter(acss.sf, site_code %in% c("MBAR", "DABA", "DAPO"))
 
-range(as.numeric(acss.filter$obcount),na.rm = T)
+range(as.numeric(acss.study.site$obcount),na.rm = T)
 
-length(unique(acss.filter$species))
+length(unique(acss.study.site$species))
 
-length(unique(acss.filter$surveysite))
+length(unique(acss.study.site$surveysite))
 
-# write.csv(acss.filter, 
-#           "BayOfIslands_ACSS_Filter.csv",
+length(unique(acss.study.site$Site_Name))
+
+# write.csv(acss.study.site,
+#           "DisposalSite_5000m_ACSS_Filter.csv",
 #           row.names = F)
 
 ###################
@@ -460,21 +514,43 @@ server <- function(input, output, session) {
                      options = layersControlOptions(collapsed = FALSE)) %>%
     
     addPolygons(data = study.site,
-                color = "grey",
+                color = "darkgreen",
                 fillOpacity = 0.15,
                 opacity = 1,
-                weight = 1,
+                weight = 5,
                 #group = "Dataset",
                 popup = popupTable(study.site, zcol = c("Site_Name"), row.numbers = F, feature.id = F)) %>%
     
-    addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
-                color = "red",
+    addPolygons(data = sd,
+                color = "pink",
                 fillOpacity = 0.15,
                 opacity = 1,
                 weight = 1,
                 #group = "Dataset",
-                popup = popupTable(cw.int, zcol = c("BLOC", "NAME_NOM"), row.numbers = F, feature.id = F)) %>%
+                popup = popupTable(sd, zcol = c("label", "region", "keySiteId"), row.numbers = F, feature.id = F)) %>%
     
+    
+    # addCircleMarkers(data = colonies[colonies$province %in% c("LB", "NF"),],
+    #                  #radius = ~log(coei$Total),
+    #                  #lng = colonies$londec,
+    #                  #lat = colonies$latdec,
+    #                  fillOpacity = 0.6,
+    #                  radius = 2.5,
+    #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
+    #                  color = "blue",
+    #                  weight = 1,
+    #                  #group = as.character(mydata.sf.m$Year),
+    #                  popup = popupTable(colonies[colonies$province %in% c("LB", "NF"),], zcol = c("colony_name"), row.numbers = F, feature.id = F)) %>%
+    # 
+    
+    # addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
+    #             color = "red",
+    #             fillOpacity = 0.15,
+    #             opacity = 1,
+    #             weight = 1,
+    #             #group = "Dataset",
+    #             popup = popupTable(cw.int, zcol = c("BLOC", "NAME_NOM"), row.numbers = F, feature.id = F)) %>%
+    # 
     # addPolygons(data = ews.nl,
     #             color = "yellow",
     #             fillOpacity = 0.15,
@@ -541,15 +617,6 @@ server <- function(input, output, session) {
                      weight = 1,
                      #group = as.character(mydata.sf.m$Year),
                      popup = popupTable(censuses.sum, zcol = c("colony_name", "most_recent_year", "most_recent_year_count", "max_size"), row.numbers = F, feature.id = F)) %>%
-
-
-    addPolygons(data = sd,
-                color = "pink",
-                fillOpacity = 0.15,
-                opacity = 1,
-                weight = 1,
-                #group = "Dataset",
-                popup = popupTable(sd, zcol = c("label", "region"), row.numbers = F, feature.id = F)) %>%
 
 
     # addPolylines(data = bbs.nl,
