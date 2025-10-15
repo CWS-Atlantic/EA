@@ -347,7 +347,7 @@ unique(acss.filter$species)
 
 bago.inc <- st_read(dsn = "Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/BAGO/Data/BAGO_2017.gdb", layer = "BAGO_incidental")
 
-bago.cws <- st_read("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/BAGO/Data/CWS Surveys/CWS_BAGO_Surveys_1981-2010.gdb")
+bago.cws <- st_read("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/BAGO/Data/CWS Surveys/CWS_BAGO_Surveys_1981_2025_EN_FR.gdb")
 
 bago.cws <- filter(bago.cws, Species_Code_EN == "BAGO")
 

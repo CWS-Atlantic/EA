@@ -93,37 +93,37 @@ require(readxl)
 ##   load in Study Site area data   ##
 ######################################
 
-#Create polygon from coordinate centroid
-df <- data.frame(
-  lat = 46.267111,
-  lon = -60.12581
-)
-
-
-df.sf <- df %>%
-  st_as_sf(coords = c("lon", "lat"))%>%
-  st_set_crs(4326)
-
-df.utm <- st_transform(df.sf, 32620) #CRS 32620 for this UTM zone 20
-
-#buffer by 5000m
-df.5000 <- st_buffer(df.utm, dist = 5000)
-
-#turn to polygon:
-df.5000 <- df.5000 %>%
-  summarise(geometry = st_combine(geometry)) %>%
-  st_cast("POLYGON")
-
-#transform back to lat/lon
-study.site <- st_transform(df.5000, 4326) #CRS 4326 for this
-
-
-# #read in study site polygon
-# study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Grand Pre NS/GrandPre.kml")
+# #Create polygon from coordinate centroid
+# df <- data.frame(
+#   lat = 46.267111,
+#   lon = -60.12581
+# )
 # 
-# study.site <- st_transform(study.site, 4326)
 # 
-# study.site <- st_zm(study.site, drop = T, what = "ZM")
+# df.sf <- df %>%
+#   st_as_sf(coords = c("lon", "lat"))%>%
+#   st_set_crs(4326)
+# 
+# df.utm <- st_transform(df.sf, 32620) #CRS 32620 for this UTM zone 20
+# 
+# #buffer by 5000m
+# df.5000 <- st_buffer(df.utm, dist = 5000)
+# 
+# #turn to polygon:
+# df.5000 <- df.5000 %>%
+#   summarise(geometry = st_combine(geometry)) %>%
+#   st_cast("POLYGON")
+# 
+# #transform back to lat/lon
+# study.site <- st_transform(df.5000, 4326) #CRS 4326 for this
+
+
+#read in study site polygon
+study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 EverWind NS/EverwindGuysborough.kml")
+
+study.site <- st_transform(study.site, 4326)
+
+study.site <- st_zm(study.site, drop = T, what = "ZM")
 
 
 atl <- st_read(dsn = "C:/Users/englishm/Documents/EA/Data/Atlantic_Region.kml")
@@ -319,7 +319,7 @@ unique(acss.filter$surveysite)
 
 
 ##########################
-##   SESA Survey Data   ##
+##   SESA Survey Data   ##  #only inner BoF / Minas Basin
 ##########################
 
 sesa <- read.csv("C:/Users/EnglishM/Documents/Shorebirds/For Publication/SESA_Aerial_Survey_1976_2024.csv")
@@ -352,7 +352,7 @@ accdc.cw <- st_intersection(ns.accdc, cw[cw$BLOC %in% cw.int$BLOC,])
 
 bago.inc <- st_read(dsn = "Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/BAGO/Data/BAGO_2017.gdb", layer = "BAGO_incidental")
 
-bago.cws <- st_read("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/BAGO/Data/CWS Surveys/CWS_BAGO_Surveys_1981-2010.gdb")
+bago.cws <- st_read("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/BAGO/Data/CWS Surveys/CWS_BAGO_Surveys_1981_2025_EN_FR.gdb")
 
 bago.cws <- filter(bago.cws, Species_Code_EN == "BAGO")
 
@@ -612,16 +612,16 @@ server <- function(input, output, session) {
                      popup = popupTable(acss.filter, zcol = c("species", "obcount", "surveysite"), row.numbers = F, feature.id = F)) %>%
     
     
-    addCircleMarkers(data = accdc.cw,
-                     #radius = ~log(coei$Total),
-                     lng = accdc.cw$LONDEC,
-                     lat = accdc.cw$LATDEC,
-                     fillOpacity = 0.6,
-                     # fillColor = ~pal(Year), #this calls the colour palette we created above
-                     color = "yellow",
-                     weight = 1,
-                     #group = as.character(mydata.sf.m$Year),
-                     popup = popupTable(accdc.cw, zcol = c("COMNAME", "SPROT", "OBDATE"), row.numbers = F, feature.id = F)) %>%
+    # addCircleMarkers(data = accdc.cw,
+    #                  #radius = ~log(coei$Total),
+    #                  lng = accdc.cw$LONDEC,
+    #                  lat = accdc.cw$LATDEC,
+    #                  fillOpacity = 0.6,
+    #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
+    #                  color = "yellow",
+    #                  weight = 1,
+    #                  #group = as.character(mydata.sf.m$Year),
+    #                  popup = popupTable(accdc.cw, zcol = c("COMNAME", "SPROT", "OBDATE"), row.numbers = F, feature.id = F)) %>%
 
 
     
