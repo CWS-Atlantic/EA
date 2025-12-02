@@ -29,8 +29,8 @@ require(readxl)
 #   p <- as.data.frame(str_split_fixed(x, ",", 2))
 #   
 #   names(p) <- c("lon", "lat")
-#   p$lon <- as.numeric(gsub("c\\(", "", p$lon))
-#   p$lat <- as.numeric(gsub("\\)", "", p$lat))
+#   p$lon <- as.numeric(gsub("c//(", "", p$lon))
+#   p$lat <- as.numeric(gsub("//)", "", p$lat))
 #   p
 # }
 # 
@@ -95,8 +95,8 @@ require(readxl)
 
 #Create polygon from coordinate centroid
 df <- data.frame(
-  lat = 46.149600,
-  lon = -60.224600
+  lat =  45.35158,
+  lon = -61.15008
 )
 
 
@@ -107,7 +107,7 @@ df.sf <- df %>%
 df.utm <- st_transform(df.sf, 32620) #CRS 32620 for this UTM zone 20
 
 #buffer by 5000m
-df.5000 <- st_buffer(df.utm, dist = 5000)
+df.5000 <- st_buffer(df.utm, dist = 10000)
 
 #turn to polygon:
 df.5000 <- df.5000 %>%
@@ -118,8 +118,11 @@ df.5000 <- df.5000 %>%
 study.site <- st_transform(df.5000, 4326) #CRS 4326 for this
 
 
-#read in study site polygon
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Morden Road NS/Morden-Road_Shapefiles/LUTZ_WETLANDS_Polygon.shp")
+##read in study site polygon
+#study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 REP NS/EA Data Submission - Shapefiles/NOVA_REP_AssessmentArea.shp")
+
+# #buffer by 5000m
+# study.site <- st_buffer(study.site, dist = 5000)
 
 study.site <- st_transform(study.site, 4326)
 
@@ -308,7 +311,9 @@ acss.cw.5000 <- st_transform(acss.cw.5000, "+proj=longlat +datum=WGS84")
 
 acss.filter <- st_intersection(acss.sf, acss.cw.5000)
 
-acss.filter <- filter(acss.sf, surveysite %in% c("Sydney Tar Ponds"))
+#acss.filter <- st_intersection(acss.sf, study.site)
+
+#acss.filter <- filter(acss.sf, surveysite %in% c("Sydney Tar Ponds"))
 
 range(as.numeric(acss.filter$obcount), na.rm=T)
 
@@ -341,7 +346,7 @@ ns.accdc <- filter(ns.accdc,
 
 ns.accdc <- st_transform(ns.accdc, 4326)
 
-#accdc.cw <- st_intersection(ns.accdc, cw[cw$BLOC %in% cw.int$BLOC,])
+accdc.cw <- st_intersection(ns.accdc, cw[cw$BLOC %in% cw.int$BLOC,])
 
 accdc.cw <- st_intersection(ns.accdc, study.site)
 
@@ -401,7 +406,7 @@ atbr <- set_standard_names(atbr)
 
 atbr$first_block <- as.numeric(substr(atbr$blockid, start = 1, stop = 3))
 
-atbr$first_block <- sub("\\,.*", "", atbr$blockid)
+atbr$first_block <- sub("//,.*", "", atbr$blockid)
 
 atbr$BLOC <- as.numeric(atbr$first_block)
 
@@ -508,6 +513,14 @@ ns.ews <- st_read("C:/users/englishm/Documents/EWS/EWSPlotsAllRegions.gdb")
 #filter for just NS plots
 ns.ews <- ns.ews[ns.ews$Province == "NS",]
 
+#read in EWS obs data
+
+ns.ews.obs <- read.csv("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/Eastern Waterfowl Survey/EWS Maritimes/Data/Processed Data/EWS_Maritimes_Observations_1990-2025.csv")
+
+ns.ews.filter <- ns.ews.obs[ns.ews.obs$PLOT == 65046,]
+
+unique(ns.ews.filter$SPECIES_E)
+
 #read in Ag plots
 ns.ag <-  st_read("C:/users/englishm/Documents/EWS/Agricultural Plot Survey/For Publication/CWS_Agricultural_Plots_SCF_Parcelles_Agricoles.gdb")
 
@@ -601,22 +614,22 @@ server <- function(input, output, session) {
                 #group = "Dataset",
                 #popup = popupTable(study.site, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
     
-    # addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
-    #             color = "red",
-    #             fillOpacity = 0.15,
-    #             opacity = 1,
-    #             weight = 1,
-    #             #group = "Dataset",
-    #             popup = popupTable(cw.int, zcol = c("BLOC", "NAME_NOM"), row.numbers = F, feature.id = F)) %>%
-    
-    # addPolygons(data = ns.ews,
-    #             color = "pink",
-    #             fillOpacity = 0.15,
-    #             opacity = 1,
-    #             weight = 1,
-    #             #group = "Dataset",
-    #             popup = popupTable(ns.ews, zcol = c("PlotID", "CWSRegion"), row.numbers = F, feature.id = F)) %>%
-    # 
+    addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
+                color = "red",
+                fillOpacity = 0.15,
+                opacity = 1,
+                weight = 1,
+                #group = "Dataset",
+                popup = popupTable(cw.int, zcol = c("BLOC", "NAME_NOM"), row.numbers = F, feature.id = F)) %>%
+
+    addPolygons(data = ns.ews,
+                color = "pink",
+                fillOpacity = 0.15,
+                opacity = 1,
+                weight = 1,
+                #group = "Dataset",
+                popup = popupTable(ns.ews, zcol = c("PlotID", "CWSRegion"), row.numbers = F, feature.id = F)) %>%
+
     # addPolygons(data = ns.ag,
     #             color = "yellow",
     #             fillOpacity = 0.15,
@@ -624,8 +637,7 @@ server <- function(input, output, session) {
     #             weight = 1,
     #             #group = "Dataset",
     #             popup = popupTable(ns.ag, zcol = c("Plot_Parcelle", "Province"), row.numbers = F, feature.id = F)) %>%
-    # 
-    # # 
+
     addPolylines(data = bbs.ns,
                  color = "pink",
                  fillOpacity = 0.15,
@@ -658,19 +670,17 @@ server <- function(input, output, session) {
                      #group = as.character(mydata.sf.m$Year),
                      popup = popupTable(accdc.cw, zcol = c("COMNAME", "SPROT", "OBDATE"), row.numbers = F, feature.id = F)) %>%
 
+  addCircleMarkers(data = hard.sf,
+                   #radius = ~log(coei$Total),
+                   lng = as.numeric(hard.sf$longitude),
+                   lat = as.numeric(hard.sf$latitude),
+                   fillOpacity = 0.6,
+                   # fillColor = ~pal(Year), #this calls the colour palette we created above
+                   color = "grey",
+                   weight = 1,
+                   #group = as.character(mydata.sf.m$Year),
+                   popup = popupTable(hard.sf, zcol = c("HADU_total", "PUSA", "year"), row.numbers = F, feature.id = F)) %>%
 
-    
-  # addCircleMarkers(data = hard.sf,
-  #                  #radius = ~log(coei$Total),
-  #                  lng = as.numeric(hard.sf$longitude),
-  #                  lat = as.numeric(hard.sf$latitude),
-  #                  fillOpacity = 0.6,
-  #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
-  #                  color = "grey",
-  #                  weight = 1,
-  #                  #group = as.character(mydata.sf.m$Year),
-  #                  popup = popupTable(hard.sf, zcol = c("HADU_total", "PUSA", "year"), row.numbers = F, feature.id = F)) %>%
-  # 
   # addCircleMarkers(data = bago.inc,
   #                  #radius = ~log(coei$Total),
   #                  lng = bago.inc$long_,
@@ -683,18 +693,18 @@ server <- function(input, output, session) {
   #                  popup = popupTable(bago.inc, zcol = c("Location", "Total", "Year_"), row.numbers = F, feature.id = F)) %>%
   # 
   # 
-  # addCircleMarkers(data = censuses.sum,
-  #                  #radius = ~log(coei$Total),
-  #                  lng = censuses.sum$londec,
-  #                  lat = censuses.sum$latdec,
-  #                  fillOpacity = 0.6,
-  #                  radius = 3,
-  #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
-  #                  color = "blue",
-  #                  weight = 1,
-  #                  #group = as.character(mydata.sf.m$Year),
-  #                  popup = popupTable(censuses.sum, zcol = c("colony_name", "most_recent_year", "most_recent_year_count", "max_size"), row.numbers = F, feature.id = F)) %>%
-  # 
+  addCircleMarkers(data = censuses.sum,
+                   #radius = ~log(coei$Total),
+                   lng = censuses.sum$londec,
+                   lat = censuses.sum$latdec,
+                   fillOpacity = 0.6,
+                   radius = 3,
+                   # fillColor = ~pal(Year), #this calls the colour palette we created above
+                   color = "blue",
+                   weight = 1,
+                   #group = as.character(mydata.sf.m$Year),
+                   popup = popupTable(censuses.sum, zcol = c("colony_name", "most_recent_year", "most_recent_year_count", "max_size"), row.numbers = F, feature.id = F)) %>%
+
   # 
   #   addPolygons(data = sd,
   #               color = "blue",
