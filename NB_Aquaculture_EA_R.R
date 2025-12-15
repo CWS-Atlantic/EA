@@ -1,6 +1,6 @@
-###########################
-##   NB Aquaculture EA   ##
-###########################
+########################
+##   NB EA Template   ##
+########################
 
 require(dplyr)
 require(ggmap)
@@ -8,15 +8,15 @@ require(leaflet)
 require(leaflet.extras)
 require(leafpop)
 require(mapedit)
-require(miniUI)
+#require(miniUI)
 require(readr)
 require(sf)
 require(shiny)
-require(shinyWidgets)
+#require(shinyWidgets)
 require(stringr)
 require(tidyr)
 require(tricky)
-require(DT)
+#require(DT)
 require(readxl)
 
 
@@ -72,7 +72,7 @@ require(readxl)
 # study.site <- df.5000
 
 #read in study site via shapegile
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Restigouche NB/RESCOL_StudyArea/RESCOL_StudyArea_20250818.shp")
+study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Sisson NB/Sisson.kml")
 
 study.site <- st_transform(study.site, 4326)
 
@@ -285,7 +285,7 @@ nb.accdc <- filter(nb.accdc,
 
 nb.accdc <- st_transform(nb.accdc, 4326)
 
-accdc.cw <- st_intersection(nb.accdc, cw[cw$BLOC %in% cw.int$BLOC,])
+#accdc.cw <- st_intersection(nb.accdc, cw[cw$BLOC %in% cw.int$BLOC,])
 
 accdc.filter <- st_intersection(nb.accdc, study.site)
 
@@ -384,16 +384,6 @@ hard.sf <- st_intersection(hard.sf, cw[cw$BLOC %in% cw.int$BLOC,])
 
 #write.csv(hard.sf, "Harlequin_Duck_Purple_Sandpiper_Maces_Bay.csv")
 
-
-###########################
-##   seaduck key sites   ##
-###########################
-
-sd <- st_read(dsn = "C:/Users/englishm/Documents/EA/seaDuckKeyHabitatSites_20220316.shp")
-
-sd <- st_transform(sd, 4326)
-
-#sd <- filter(sd, label == "South Shore Nova Scotia")
 
 ##########################
 ##   SESA Survey Data   ##
