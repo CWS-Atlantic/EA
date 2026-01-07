@@ -119,7 +119,7 @@ study.site <- st_transform(df.5000, 4326) #CRS 4326 for this
 
 
 ##read in study site polygon
-#study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 REP NS/EA Data Submission - Shapefiles/NOVA_REP_AssessmentArea.shp")
+study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2026/2026 Aulds Cove NS/Shapefiles - Green Current/GreenCurrent_StudyArea.shp")
 
 # #buffer by 5000m
 # study.site <- st_buffer(study.site, dist = 5000)
@@ -183,9 +183,9 @@ cw.data <- filter(cw.data, BLOC %in% cw.int$BLOC)
 ##   Atlantic Colonial Waterbird Database   ##
 ##############################################
 
-colonies <- read_csv(file = "C:/Users/englishm/Documents/EA/Data/Colonial_Waterbird_Colonies_2024.csv")
+colonies <- read_csv(file = "C:/Users/englishm/Documents/Colonial Waterbirds Database/Colonies_2025-12-08.csv")
 
-censuses <- read_csv(file = "C:/Users/englishm/Documents/EA/Data/Colonial_Waterbird_Census_2024.csv")
+censuses <- read_csv(file = "C:/Users/englishm/Documents/Colonial Waterbirds Database/Censuses_2025-12-08.csv")
 
 #spatial colonies, subset census based on colonies in coastal block
 
@@ -302,6 +302,9 @@ acss.sf <- acss %>%
 
 
 acss.cw <- st_transform(cw[cw$BLOC %in% cw.int$BLOC,], "+proj=utm +zone=20 +datum=WGS84") ##Almost all of NS is zone 20. Zone 21 at the eastern edge of Cape Breton, Zone 19 near Brier Island / Yarmouth
+
+#acss.cw <- st_transform(study.site, "+proj=utm +zone=20 +datum=WGS84") ##Almost all of NS is zone 20. Zone 21 at the eastern edge of Cape Breton, Zone 19 near Brier Island / Yarmouth
+
 
 
 #make the 5000m buffer
@@ -681,18 +684,18 @@ server <- function(input, output, session) {
                    #group = as.character(mydata.sf.m$Year),
                    popup = popupTable(hard.sf, zcol = c("HADU_total", "PUSA", "year"), row.numbers = F, feature.id = F)) %>%
 
-  # addCircleMarkers(data = bago.inc,
-  #                  #radius = ~log(coei$Total),
-  #                  lng = bago.inc$long_,
-  #                  lat = bago.inc$lat,
-  #                  fillOpacity = 0.6,
-  #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
-  #                  color = "black",
-  #                  weight = 1,
-  #                  #group = as.character(mydata.sf.m$Year),
-  #                  popup = popupTable(bago.inc, zcol = c("Location", "Total", "Year_"), row.numbers = F, feature.id = F)) %>%
-  # 
-  # 
+  addCircleMarkers(data = bago.inc,
+                   #radius = ~log(coei$Total),
+                   lng = bago.inc$long_,
+                   lat = bago.inc$lat,
+                   fillOpacity = 0.6,
+                   # fillColor = ~pal(Year), #this calls the colour palette we created above
+                   color = "black",
+                   weight = 1,
+                   #group = as.character(mydata.sf.m$Year),
+                   popup = popupTable(bago.inc, zcol = c("Location", "Total", "Year_"), row.numbers = F, feature.id = F)) %>%
+
+
   addCircleMarkers(data = censuses.sum,
                    #radius = ~log(coei$Total),
                    lng = censuses.sum$londec,
@@ -714,13 +717,13 @@ server <- function(input, output, session) {
   #               #group = "Dataset",
   #               popup = popupTable(sd, zcol = c("label", "region"), row.numbers = F, feature.id = F)) %>%
     
-    addPolygons(data = ch,
+    addPolygons(data = ch.atl,
                 color = "blue",
                 fillOpacity = 0.15,
                 opacity = 1,
                 weight = 1,
                 #group = "Dataset",
-                popup = popupTable(ch, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+                popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
 
 
     
