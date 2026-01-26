@@ -244,7 +244,7 @@ ch.study.site <- st_intersection(ch, cw[cw$BLOC %in% cw.int$BLOC,])
 ##   ACCDC   ##
 ###############
 
-pe.accdc <- st_read("Q:/GW/EC1121SAR_EEP_Ops/ATL_CWS_SAR/ExternalData/ACCDC/2026/Data/ACCDC_PE_RARE_SENS_240609.gdb")
+pe.accdc <- st_read("Q:/GW/EC1121SAR_EEP_Ops/ATL_CWS_SAR/ExternalData/ACCDC/2026/Data/ACCDC_PE_RARE_SENS_260119.gdb")
 
 
 #filter for species at risk (Special Concern, Vulnerable, Threatened, Endangered)
