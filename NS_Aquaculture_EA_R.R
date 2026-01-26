@@ -342,7 +342,7 @@ sesa.sf <- st_as_sf(sesa,
 ##   ACCDC   ##
 ###############
 
-ns.accdc <- st_read("C:/Users/englishm/Documents/EA/Data/ACCDC/NS/ACCDC_NS_RARE_SENS_240609.gdb")
+ns.accdc <- st_read("Q:/GW/EC1121SAR_EEP_Ops/ATL_CWS_SAR/ExternalData/ACCDC/2026/Data/ACCDC_NS_RARE_SENS_260119.gdb")
 
 ns.accdc <- filter(ns.accdc,
                    NPROTSAR %in% c("SC", "V", "T", "E"))

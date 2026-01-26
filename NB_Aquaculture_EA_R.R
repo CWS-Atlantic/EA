@@ -277,7 +277,7 @@ censuses.sum <- left_join(colonies.cw, censuses.sum, by = "ColonyId")
 ##   ACCDC   ##
 ###############
 
-nb.accdc <- st_read("C:/Users/englishm/Documents/EA/Data/ACCDC/NB/ACCDC_NB_RARE_SENS_240609.gdb")
+nb.accdc <- st_read("Q:/GW/EC1121SAR_EEP_Ops/ATL_CWS_SAR/ExternalData/ACCDC/2026/Data/ACCDC_NB_RARE_SENS_260119.gdb")
 
 #filter for species at risk (Special Concern, Vulnerable, Threatened, Endangered)
 nb.accdc <- filter(nb.accdc,
