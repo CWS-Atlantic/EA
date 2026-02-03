@@ -42,36 +42,36 @@ require(DT)
 ##   load in Study Site area data   ##
 ######################################
 
-# #Create polygon from coordinate centroid
-# df <- data.frame(
-#   lat = 43.812487, 
-#   lon = -65.910547 
-# )
-# 
-# 
-# df.sf <- df %>%
-#   st_as_sf(coords = c("lon", "lat"))%>%
-#   st_set_crs(4326)
-# 
-# df.utm <- st_transform(df.sf, 32620) #CRS 32620 for this
-# 
-# #buffer by 1000m
-# df.1000 <- st_buffer(df.utm, dist = 1000)
-# 
-# #turn to polygon:
-# df.1000 <- df.1000 %>%
-#   summarise(geometry = st_combine(geometry)) %>%
-#   st_cast("POLYGON")
-
-# #transform back to lat/lon
-# study.site <- st_transform(df.1000, 4326) #CRS 4326 for this
+#Create polygon from coordinate centroid ##47°34'00.7"N, 52°41'15.7
+df <- data.frame(
+  lat = 47.5668611,
+  lon = -52.6876944
+)
 
 
-study.site <- st_read(dsn = "C:/Users/EnglishM/Documents/EA/2025/2025 FWMP NL/FWMP_2025_DS_Pts/FWMP_2025_DS_Pts.shp")
+df.sf <- df %>%
+  st_as_sf(coords = c("lon", "lat"))%>%
+  st_set_crs(4326)
 
-study.site <- st_transform(study.site, 4326)
+df.utm <- st_transform(df.sf, 32622) #CRS 32622 for this
 
-study.site <- st_zm(study.site, drop = T, what = "ZM")
+#buffer by 5000m
+df.5000 <- st_buffer(df.utm, dist = 5000)
+
+#turn to polygon:
+df.5000 <- df.5000 %>%
+  summarise(geometry = st_combine(geometry)) %>%
+  st_cast("POLYGON")
+
+#transform back to lat/lon
+study.site <- st_transform(df.5000, 4326) #CRS 4326 for this
+
+
+# study.site <- st_read(dsn = "C:/Users/EnglishM/Documents/EA/2025/2025 FWMP NL/FWMP_2025_DS_Pts/FWMP_2025_DS_Pts.shp")
+# 
+# study.site <- st_transform(study.site, 4326)
+# 
+# study.site <- st_zm(study.site, drop = T, what = "ZM")
 
 
 #load in Atlantic Region shape
@@ -168,9 +168,9 @@ cw.data <- filter(cw.data, BLOC %in% cw.int$BLOC)
 ##   load in atlantic coastal bird database   ##
 ################################################
 
-colonies <- read_csv(file = "C:/Users/englishm/Documents/EA/Data/Colonial_Waterbird_Colonies_2024.csv")
+colonies <- read_csv(file = "C:/Users/englishm/Documents/Colonial Waterbirds Database/Colonies_2025-12-08.csv")
 
-censuses <- read_csv(file = "C:/Users/englishm/Documents/EA/Data/Colonial_Waterbird_Census_2024.csv")
+censuses <- read_csv(file = "C:/Users/englishm/Documents/Colonial Waterbirds Database/Censuses_2025-12-08.csv")
 
 
 Encoding( x = colonies$colony_name ) <- "UTF-8"
@@ -246,6 +246,11 @@ censuses.sum <- select(censuses.sum,
 #join both tables by ColonyId
 censuses.sum <- left_join(colonies.cw, censuses.sum, by = "ColonyId")
 
+#collapse to one line per colony_name*Species_code
+censuses.sum <- censuses.sum %>%
+  group_by(Species_code, colony_name) %>%
+  distinct(Species_code,colony_name, .keep_all=TRUE)
+
 unique(censuses.sum$Species_code)
 
 range(censuses.sum$most_recent_year_count, na.rm = T)
@@ -305,7 +310,7 @@ acss.sf <- acss %>%
            na.fail = F)
 
 
-acss.cw <- st_transform(cw[cw$BLOC %in% cw.int$BLOC,], "+proj=utm +zone=21 +datum=WGS84") #UTM zone 22 is for the Avalon Peninsula
+acss.cw <- st_transform(cw[cw$BLOC %in% cw.int$BLOC,], "+proj=utm +zone=22 +datum=WGS84") #UTM zone 22 is for the Avalon Peninsula
 
 #lb.out <- st_cast(lb.out,"MULTILINESTRING")
 
@@ -517,9 +522,9 @@ server <- function(input, output, session) {
                 color = "darkgreen",
                 fillOpacity = 0.15,
                 opacity = 1,
-                weight = 5,
+                weight = 5) %>%#,
                 #group = "Dataset",
-                popup = popupTable(study.site, zcol = c("Site_Name"), row.numbers = F, feature.id = F)) %>%
+                #popup = popupTable(study.site, zcol = c("Site_Name"), row.numbers = F, feature.id = F)) %>%
     
     addPolygons(data = sd,
                 color = "pink",
@@ -541,16 +546,16 @@ server <- function(input, output, session) {
     #                  weight = 1,
     #                  #group = as.character(mydata.sf.m$Year),
     #                  popup = popupTable(colonies[colonies$province %in% c("LB", "NF"),], zcol = c("colony_name"), row.numbers = F, feature.id = F)) %>%
-    # 
     
-    # addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
-    #             color = "red",
-    #             fillOpacity = 0.15,
-    #             opacity = 1,
-    #             weight = 1,
-    #             #group = "Dataset",
-    #             popup = popupTable(cw.int, zcol = c("BLOC", "NAME_NOM"), row.numbers = F, feature.id = F)) %>%
-    # 
+
+    addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
+                color = "red",
+                fillOpacity = 0.15,
+                opacity = 1,
+                weight = 1,
+                #group = "Dataset",
+                popup = popupTable(cw.int, zcol = c("BLOC", "NAME_NOM"), row.numbers = F, feature.id = F)) %>%
+
     # addPolygons(data = ews.nl,
     #             color = "yellow",
     #             fillOpacity = 0.15,
@@ -595,15 +600,15 @@ server <- function(input, output, session) {
                      popup = popupTable(coei.sf, zcol = c("Species", "White", "Brown", "Unknown", "Total"), row.numbers = F, feature.id = F)) %>%
 
 
-    addCircleMarkers(data = bago.inc,
-                     radius = ~log(bago.inc$Total),
-                     lng = bago.inc$long_,
-                     lat = bago.inc$lat,
-                     fillOpacity = 0.6,
-                     # fillColor = ~pal(Year), #this calls the colour palette we created above
-                     color = "black",
-                     weight = 1,
-                     popup = popupTable(bago.inc, zcol = c("Year_", "Total"), row.numbers = F, feature.id = F)) %>%
+    # addCircleMarkers(data = bago.inc,
+    #                  radius = ~log(bago.inc$Total),
+    #                  lng = bago.inc$long_,
+    #                  lat = bago.inc$lat,
+    #                  fillOpacity = 0.6,
+    #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
+    #                  color = "black",
+    #                  weight = 1,
+    #                  popup = popupTable(bago.inc, zcol = c("Year_", "Total"), row.numbers = F, feature.id = F)) %>%
 
 
     addCircleMarkers(data = censuses.sum,
