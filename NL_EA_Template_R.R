@@ -173,14 +173,14 @@ colonies <- read_csv(file = "C:/Users/englishm/Documents/Colonial Waterbirds Dat
 censuses <- read_csv(file = "C:/Users/englishm/Documents/Colonial Waterbirds Database/Censuses_2025-12-08.csv")
 
 
-Encoding( x = colonies$colony_name ) <- "UTF-8"
-
-# replace all non UTF-8 character strings with an empty space
-colonies$colony_name <-
-  iconv( x = colonies$colony_name
-         , from = "UTF-8"
-         , to = "UTF-8"
-         , sub = "" )
+# Encoding( x = colonies$colony_name ) <- "UTF-8"
+# 
+# # replace all non UTF-8 character strings with an empty space
+# colonies$colony_name <-
+#   iconv( x = colonies$colony_name
+#          , from = "UTF-8"
+#          , to = "UTF-8"
+#          , sub = "" )
 
 #spatial colonies, subset census based on colonies in coastal block
 
