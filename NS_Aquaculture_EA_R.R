@@ -93,40 +93,54 @@ require(readxl)
 ##   load in Study Site area data   ##
 ######################################
 
-#Create polygon from coordinate centroid
-df <- data.frame(
-  lat =  45.35158,
-  lon = -61.15008
-)
+##NS Cadastral data if necessary
 
+st_layers("Q:/GW/EC1142ProtAreas_AiresProt/ATL_CWS_ProtectedAreas/Provincial_Cadastral_Data/NS Cadastral Data November 2025/NS_Property_Records_DB.gdb")
 
-df.sf <- df %>%
-  st_as_sf(coords = c("lon", "lat"))%>%
-  st_set_crs(4326)
+ns.cad <- st_read("Q:/GW/EC1142ProtAreas_AiresProt/ATL_CWS_ProtectedAreas/Provincial_Cadastral_Data/NS Cadastral Data November 2025/NS_Property_Records_DB.gdb",
+                  layer = "NSPRD_pol")
 
-df.utm <- st_transform(df.sf, 32620) #CRS 32620 for this UTM zone 20
+#filter for specific PID for Hebron NS
+ns.cad <- ns.cad[ns.cad$PID == "90140419",]
 
-#buffer by 5000m
-df.5000 <- st_buffer(df.utm, dist = 10000)
-
-#turn to polygon:
-df.5000 <- df.5000 %>%
-  summarise(geometry = st_combine(geometry)) %>%
-  st_cast("POLYGON")
-
-#transform back to lat/lon
-study.site <- st_transform(df.5000, 4326) #CRS 4326 for this
-
-
-##read in study site polygon
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2026/2026 Aulds Cove NS/Shapefiles - Green Current/GreenCurrent_StudyArea.shp")
-
-# #buffer by 5000m
-# study.site <- st_buffer(study.site, dist = 5000)
-
-study.site <- st_transform(study.site, 4326)
+study.site <- st_transform(ns.cad, 4326)
 
 study.site <- st_zm(study.site, drop = T, what = "ZM")
+
+# #Create polygon from coordinate centroid
+# df <- data.frame(
+#   lat =  45.35158,
+#   lon = -61.15008
+# )
+# 
+# 
+# df.sf <- df %>%
+#   st_as_sf(coords = c("lon", "lat"))%>%
+#   st_set_crs(4326)
+# 
+# df.utm <- st_transform(df.sf, 32620) #CRS 32620 for this UTM zone 20
+# 
+# #buffer by 5000m
+# df.5000 <- st_buffer(df.utm, dist = 10000)
+# 
+# #turn to polygon:
+# df.5000 <- df.5000 %>%
+#   summarise(geometry = st_combine(geometry)) %>%
+#   st_cast("POLYGON")
+# 
+# #transform back to lat/lon
+# study.site <- st_transform(df.5000, 4326) #CRS 4326 for this
+# 
+# 
+# ##read in study site polygon
+# study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2026/2026 Aulds Cove NS/Shapefiles - Green Current/GreenCurrent_StudyArea.shp")
+# 
+# # #buffer by 5000m
+# # study.site <- st_buffer(study.site, dist = 5000)
+# 
+# study.site <- st_transform(study.site, 4326)
+# 
+# study.site <- st_zm(study.site, drop = T, what = "ZM")
 
 
 atl <- st_read(dsn = "C:/Users/englishm/Documents/EA/Data/Atlantic_Region.kml")
@@ -183,7 +197,7 @@ cw.data <- filter(cw.data, BLOC %in% cw.int$BLOC)
 ##   Atlantic Colonial Waterbird Database   ##
 ##############################################
 
-colonies <- read_csv(file = "C:/Users/englishm/Documents/Colonial Waterbirds Database/Colonies_2025-12-08.csv")
+colonies <- read_csv(file = "C:/Users/englishm/Documents/Colonial Waterbirds Database/Colonies_2026-02-05.csv")
 
 censuses <- read_csv(file = "C:/Users/englishm/Documents/Colonial Waterbirds Database/Censuses_2025-12-08.csv")
 
@@ -633,13 +647,13 @@ server <- function(input, output, session) {
                 #group = "Dataset",
                 popup = popupTable(ns.ews, zcol = c("PlotID", "CWSRegion"), row.numbers = F, feature.id = F)) %>%
 
-    # addPolygons(data = ns.ag,
-    #             color = "yellow",
-    #             fillOpacity = 0.15,
-    #             opacity = 1,
-    #             weight = 1,
-    #             #group = "Dataset",
-    #             popup = popupTable(ns.ag, zcol = c("Plot_Parcelle", "Province"), row.numbers = F, feature.id = F)) %>%
+    addPolygons(data = ns.ag,
+                color = "yellow",
+                fillOpacity = 0.15,
+                opacity = 1,
+                weight = 1,
+                #group = "Dataset",
+                popup = popupTable(ns.ag, zcol = c("Plot_Parcelle", "Province"), row.numbers = F, feature.id = F)) %>%
 
     addPolylines(data = bbs.ns,
                  color = "pink",
@@ -662,16 +676,16 @@ server <- function(input, output, session) {
                      popup = popupTable(acss.filter, zcol = c("species", "obcount", "surveysite"), row.numbers = F, feature.id = F)) %>%
 
     
-    addCircleMarkers(data = accdc.cw,
-                     #radius = ~log(coei$Total),
-                     lng = accdc.cw$LONDEC,
-                     lat = accdc.cw$LATDEC,
-                     fillOpacity = 0.6,
-                     # fillColor = ~pal(Year), #this calls the colour palette we created above
-                     color = "yellow",
-                     weight = 1,
-                     #group = as.character(mydata.sf.m$Year),
-                     popup = popupTable(accdc.cw, zcol = c("COMNAME", "SPROT", "OBDATE"), row.numbers = F, feature.id = F)) %>%
+    # addCircleMarkers(data = accdc.cw,
+    #                  # #radius = ~log(coei$Total),
+    #                  # lng = accdc.cw$LONDEC,
+    #                  # lat = accdc.cw$LATDEC,
+    #                  # fillOpacity = 0.6,
+    #                  # # fillColor = ~pal(Year), #this calls the colour palette we created above
+    #                  # color = "yellow",
+    #                  # weight = 1,
+    #                  # #group = as.character(mydata.sf.m$Year),
+    #                  # popup = popupTable(accdc.cw, zcol = c("COMNAME", "SPROT", "OBDATE"), row.numbers = F, feature.id = F)) %>%
 
   addCircleMarkers(data = hard.sf,
                    #radius = ~log(coei$Total),
@@ -740,9 +754,9 @@ server <- function(input, output, session) {
                                                                                            weight = 3)),
                    editOptions = editToolbarOptions(edit = FALSE, selectedPathOptions = selectedPathOptions()))
   
-  edits <- callModule(editMod, "mymap", leafmap = lf)
+  #$edits <- callModule(editMod, "mymap", leafmap = lf)
   
-  
+  lf
   
   
   #setup a reactive dataset that only looks at the data in the drawn polygon
