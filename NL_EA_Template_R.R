@@ -264,6 +264,34 @@ censuses.sum.lesp <- censuses.sum[censuses.sum$Species_code == "LESP",]
 #write.csv(censuses.sum, "CWS_Atlantic_Waterbird_Colonies_2025.csv", row.names = F)
 
 
+###############
+##   ACCDC   ##
+###############
+
+nl.accdc <- st_read("Q:/GW/EC1121SAR_EEP_Ops/ATL_CWS_SAR/ExternalData/ACCDC/2026/Data/ACCDCNL_DATAEXPORT_NONWD_22Feb2026.gdb")
+
+#filter for species at risk (Special Concern, Vulnerable, Threatened, Endangered)
+nl.accdc <- filter(nl.accdc,
+                   !NPROT %in% c("Not at risk", 
+                                 "Candidate (Priority 3)", 
+                                 "Candidate (Priority 2)", 
+                                 "Candidate (Group 3, Low Priority)", 
+                                 "Candidate (Low Priority)",
+                                 "Candidate (Mid Priority)"))
+#filter out NAs
+nl.accdc <- nl.accdc[!is.na(nl.accdc$NPROT),]
+
+nl.accdc <- st_transform(nl.accdc, 4326)
+
+#accdc.cw <- st_intersection(nb.accdc, cw[cw$BLOC %in% cw.int$BLOC,])
+
+accdc.filter <- st_intersection(nl.accdc, study.site)
+
+#accdc.cw <- st_intersection(nb.accdc, study.site)
+
+unique(accdc.cw$COMNAME)
+
+
 #################
 ##   CH DATA   ##
 #################
@@ -518,6 +546,17 @@ server <- function(input, output, session) {
                      position = "topleft",
                      options = layersControlOptions(collapsed = FALSE)) %>%
     
+    # addCircleMarkers(data = nl.accdc,
+    #                  radius = 2,
+    #                  lng = nl.accdc$LONDEC,
+    #                  lat = nl.accdc$LATDEC,
+    #                  fillOpacity = 0.6,
+    #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
+    #                  color = "yellow",
+    #                  weight = 1,
+    #                  #group = as.character(mydata.sf.m$Year),
+    #                  popup = popupTable(nl.accdc, zcol = c("COMNAM", "NPROT", "OBdate"), row.numbers = F, feature.id = F)) %>%
+    # 
     addPolygons(data = study.site,
                 color = "darkgreen",
                 fillOpacity = 0.15,
@@ -576,6 +615,16 @@ server <- function(input, output, session) {
                      #group = as.character(mydata.sf.m$Year),
                      popup = popupTable(acss.filter, zcol = c("species", "obcount", "surveysite"), row.numbers = F, feature.id = F)) %>%
     
+    addCircleMarkers(data = accdc.filter,
+                     radius = 2,
+                     lng = accdc.filter$LONDEC,
+                     lat = accdc.filter$LATDEC,
+                     fillOpacity = 0.6,
+                     # fillColor = ~pal(Year), #this calls the colour palette we created above
+                     color = "yellow",
+                     weight = 1,
+                     #group = as.character(mydata.sf.m$Year),
+                     popup = popupTable(accdc.filter, zcol = c("COMNAME", "NPROT", "OBdate"), row.numbers = F, feature.id = F)) %>%
     
     addCircleMarkers(data = hard.sf,
                      #radius = ~log(coei$Total),
