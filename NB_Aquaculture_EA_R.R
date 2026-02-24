@@ -42,50 +42,50 @@ require(readxl)
 ##   load in  study area data   ##
 ##################################
 
-# #create polygon out of point coordinates and buffer:
-# #
-# # #NB Sipu Wind
-# #
-# df <- data.frame(
-#   lat = 45.649006,
-#   lon = -65.209262
-# )
-# 
-# df.sf <- df %>%
-#   st_as_sf(coords = c("lon", "lat"))%>%
-#   st_set_crs(4326)
-# 
-# df.utm <- st_transform(df.sf, 32620) #CRS 32620 for this
-# 
-# #buffer by 5000m 
-# df.5000 <- st_buffer(df.utm, dist = 5000)
-# 
-# #turn to polygon:
-# df.5000 <- df.5000 %>%
-#   summarise(geometry = st_combine(geometry)) %>%
-#   st_cast("POLYGON")
-# 
-# #transform back to lat/lon
-# df.5000 <- st_transform(df.5000, 4326) #CRS 4326 for this (UTM Zone 20)
-# 
-# 
-# study.site <- df.5000
-
-#read in study site via shapegile
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Sisson NB/Sisson.kml")
-
-study.site <- st_transform(study.site, 4326)
-
-#drop the 3D field from the google earth shapefile
-study.site <- st_zm(study.site, drop = T, what = "ZM")
-
-# #buffer the study site by 300m for Rachel's request
-# study.site <- st_transform(study.site, crs = "+proj=utm +zone=20")
-# 
-# study.site <- st_buffer(study.site, dist = 300)
+#create polygon out of point coordinates and buffer:
 #
-# #transform back to lat-lon
+# #NB Point Lepreau
+#
+df <- data.frame(
+  lat =  45.06761,
+  lon = -66.45654
+)
+
+df.sf <- df %>%
+  st_as_sf(coords = c("lon", "lat"))%>%
+  st_set_crs(4326)
+
+df.utm <- st_transform(df.sf, 32619) #CRS 32619 for this
+
+#buffer by 5000m
+df.5000 <- st_buffer(df.utm, dist = 5000)
+
+#turn to polygon:
+df.5000 <- df.5000 %>%
+  summarise(geometry = st_combine(geometry)) %>%
+  st_cast("POLYGON")
+
+#transform back to lat/lon
+df.5000 <- st_transform(df.5000, 4326) #CRS 4326 for this (UTM Zone 20)
+
+
+study.site <- df.5000
+
+# #read in study site via shapegile
+# study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2025/2025 Sisson NB/Sisson.kml")
+# 
 # study.site <- st_transform(study.site, 4326)
+# 
+# #drop the 3D field from the google earth shapefile
+# study.site <- st_zm(study.site, drop = T, what = "ZM")
+# 
+# # #buffer the study site by 300m for Rachel's request
+# # study.site <- st_transform(study.site, crs = "+proj=utm +zone=20")
+# # 
+# # study.site <- st_buffer(study.site, dist = 300)
+# #
+# # #transform back to lat-lon
+# # study.site <- st_transform(study.site, 4326)
 
 
 atl <- st_read(dsn = "C:/Users/englishm/Documents/EA/Data/Atlantic_Region.kml")
@@ -101,7 +101,7 @@ atl <- st_make_valid(atl)
 ### Seaduck Key Sites  ##
 #########################
 
-sd <- st_read(dsn = "C:/Users/englishm/Documents/EA/seaDuckKeyHabitatSites_20220316.shp")
+sd <- st_read(dsn = "C:/Users/englishm/Documents/EA/Data/seaDuckKeyHabitatSites_20220316.shp")
 
 sd <- st_transform(sd, 4326)
 
@@ -199,9 +199,9 @@ cw.data <- filter(cw.data, BLOC %in% cw.int$BLOC)
 ##   load in atlantic coastal bird database   ##
 ################################################
 
-colonies <- read_csv(file = "C:/Users/englishm/Documents/EA/Data/Colonial_Waterbird_Colonies_2024.csv")
+colonies <- read_csv(file = "C:/Users/englishm/Documents/Colonial Waterbirds Database/Colonies_2026-02-05.csv")
 
-censuses <- read_csv(file = "C:/Users/englishm/Documents/EA/Data/Colonial_Waterbird_Census_2024.csv")
+censuses <- read_csv(file = "C:/Users/englishm/Documents/Colonial Waterbirds Database/Censuses_2025-12-08.csv")
 
 #spatial colonies, subset census based on colonies in coastal block
 
@@ -312,7 +312,7 @@ acss.sf <- acss %>%
            na.fail = F)
 
 
-acss.cw <- st_transform(cw[cw$BLOC %in% cw.int$BLOC,], "+proj=utm +zone=20 +datum=WGS84") #NB is split between zones 20 (east) and 19 (west)
+acss.cw <- st_transform(cw[cw$BLOC %in% cw.int$BLOC,], "+proj=utm +zone=19 +datum=WGS84") #NB is split between zones 20 (east) and 19 (west)
 
 # buffer study site for inland areas
 # study.site.5000 <- st_transform(study.site, "+proj=utm +zone=20 +datum=WGS84") #NB is split between zones 20 (east) and 19 (west)
@@ -332,7 +332,10 @@ acss.cw.5000 <- st_buffer(acss.cw, dist = 5000)
 
 acss.cw.5000 <- st_transform(acss.cw.5000, "+proj=longlat +datum=WGS84")
 
-acss.filter <- st_intersection(acss.sf, acss.cw.5000)
+#acss.filter <- st_intersection(acss.sf, acss.cw.5000)
+
+acss.filter <- st_intersection(acss.sf, study.site)
+
 
 #acss.filter <- filter(acss.sf, site_code %in% c("MBAR", "DABA", "DAPO"))
 
@@ -533,9 +536,9 @@ server <- function(input, output, session) {
                 color = "grey",
                 fillOpacity = 0.15,
                 opacity = 1,
-                weight = 1,
+                weight = 1) %>%
                 #group = "Dataset",
-                popup = popupTable(study.site, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+                #popup = popupTable(study.site, zcol = c(), row.numbers = F, feature.id = F)) %>%
     
 
     addPolygons(data = ch,
@@ -546,43 +549,43 @@ server <- function(input, output, session) {
                 #group = "Dataset",
                 popup = popupTable(ch, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
 
-    # addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
-    #             color = "grey",
+    addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
+                color = "grey",
+                fillOpacity = 0.15,
+                opacity = 1,
+                weight = 1,
+                #group = "Dataset",
+                popup = popupTable(cw.int, zcol = c("BLOC", "NAME_NOM"), row.numbers = F, feature.id = F)) %>%
+
+    addCircleMarkers(data = acss.filter,
+                     #radius = ~log(coei$Total),
+                     lng = acss.filter$longdec,
+                     lat = acss.filter$latdec,
+                     fillOpacity = 0.6,
+                     # fillColor = ~pal(Year), #this calls the colour palette we created above
+                     color = "purple",
+                     weight = 1,
+                     #group = as.character(mydata.sf.m$Year),
+                     popup = popupTable(acss.filter, zcol = c("species", "obcount", "surveysite"), row.numbers = F, feature.id = F)) %>%
+
+
+    # addPolygons(data = ews.nb,
+    #             color = "purple",
     #             fillOpacity = 0.15,
     #             opacity = 1,
     #             weight = 1,
     #             #group = "Dataset",
-    #             popup = popupTable(cw.int, zcol = c("BLOC", "NAME", "DESCRIPTIO"), row.numbers = F, feature.id = F)) %>%
+    #             popup = popupTable(ews.nb, zcol = c("desc_", "plot_id"), row.numbers = F, feature.id = F)) %>%
     # 
-    # addCircleMarkers(data = acss.filter,
-    #                  #radius = ~log(coei$Total),
-    #                  lng = acss.filter$longdec,
-    #                  lat = acss.filter$latdec,
-    #                  fillOpacity = 0.6,
-    #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
-    #                  color = "purple",
-    #                  weight = 1,
-    #                  #group = as.character(mydata.sf.m$Year),
-    #                  popup = popupTable(acss.filter, zcol = c("species", "obcount", "surveysite"), row.numbers = F, feature.id = F)) %>%
-
-
-    addPolygons(data = ews.nb,
-                color = "purple",
-                fillOpacity = 0.15,
-                opacity = 1,
-                weight = 1,
-                #group = "Dataset",
-                popup = popupTable(ews.nb, zcol = c("desc_", "plot_id"), row.numbers = F, feature.id = F)) %>%
-    
-    addPolygons(data = nb.ag[nb.ag$Province == "NB",],
-                color = "green",
-                fillOpacity = 0.15,
-                opacity = 1,
-                weight = 1,
-                #group = "Dataset",
-                popup = popupTable(nb.ag, zcol = c("Plot_Parcelle"), row.numbers = F, feature.id = F)) %>%
-
-    
+    # addPolygons(data = nb.ag[nb.ag$Province == "NB",],
+    #             color = "green",
+    #             fillOpacity = 0.15,
+    #             opacity = 1,
+    #             weight = 1,
+    #             #group = "Dataset",
+    #             popup = popupTable(nb.ag, zcol = c("Plot_Parcelle"), row.numbers = F, feature.id = F)) %>%
+    # 
+    # 
     addPolylines(data = bbs.nb,
                  color = "red",
                  fillOpacity = 0.15,
@@ -602,19 +605,19 @@ server <- function(input, output, session) {
                      #group = as.character(mydata.sf.m$Year),
                      popup = popupTable(accdc.filter, zcol = c("COMNAME", "SPROT", "OBDATE"), row.numbers = F, feature.id = F)) %>%
 
-    # 
-    # addCircleMarkers(data = censuses.sum,
-    #                  #radius = ~log(coei$Total),
-    #                  lng = censuses.sum$londec,
-    #                  lat = censuses.sum$latdec,
-    #                  fillOpacity = 0.6,
-    #                  radius = 3,
-    #                  # fillColor = ~pal(Year), #this calls the colour palette we created above
-    #                  color = "blue",
-    #                  weight = 1,
-    #                  #group = as.character(mydata.sf.m$Year),
-    #                  popup = popupTable(censuses.sum, zcol = c("colony_name", "most_recent_year", "most_recent_year_count", "max_size"), row.numbers = F, feature.id = F)) %>%
-    # 
+
+    addCircleMarkers(data = censuses.sum,
+                     #radius = ~log(coei$Total),
+                     lng = censuses.sum$londec,
+                     lat = censuses.sum$latdec,
+                     fillOpacity = 0.6,
+                     radius = 3,
+                     # fillColor = ~pal(Year), #this calls the colour palette we created above
+                     color = "blue",
+                     weight = 1,
+                     #group = as.character(mydata.sf.m$Year),
+                     popup = popupTable(censuses.sum, zcol = c("colony_name", "most_recent_year", "most_recent_year_count", "max_size"), row.numbers = F, feature.id = F)) %>%
+
     
     addDrawToolbar(targetGroup='Selected',
                    polylineOptions=FALSE,
