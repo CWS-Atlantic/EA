@@ -53,40 +53,40 @@ require(readxl)
 # 
 # study.site <- st_zm(study.site, drop = T, what = "ZM")
 #
-# #Create polygon from coordinate centroid
-# df <- data.frame(
-#   lat =  45.35158,
-#   lon = -61.15008
-# )
-# 
-# 
-# df.sf <- df %>%
-#   st_as_sf(coords = c("lon", "lat"))%>%
-#   st_set_crs(4326)
-# 
-# df.utm <- st_transform(df.sf, 32620) #CRS 32620 for this UTM zone 20
-# 
-# #buffer by 5000m
-# df.5000 <- st_buffer(df.utm, dist = 10000)
-# 
-# #turn to polygon:
-# df.5000 <- df.5000 %>%
-#   summarise(geometry = st_combine(geometry)) %>%
-#   st_cast("POLYGON")
-# 
-# #transform back to lat/lon
-# study.site <- st_transform(df.5000, 4326) #CRS 4326 for this
-# 
-# 
-##read in study site polygon
-study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2026/2026 Eiggs Mountain NS/EiggsMountain.kml")
+#Create polygon from coordinate centroid
+df <- data.frame(
+  lat =  45.550643,
+  lon = -61.661264
+)
 
-# #buffer by 5000m
-# study.site <- st_buffer(study.site, dist = 5000)
 
-study.site <- st_transform(study.site, 4326)
+df.sf <- df %>%
+  st_as_sf(coords = c("lon", "lat"))%>%
+  st_set_crs(4326)
 
-study.site <- st_zm(study.site, drop = T, what = "ZM")
+df.utm <- st_transform(df.sf, 32620) #CRS 32620 for this UTM zone 20
+
+#buffer by 5000m
+df.5000 <- st_buffer(df.utm, dist = 5000)
+
+#turn to polygon:
+df.5000 <- df.5000 %>%
+  summarise(geometry = st_combine(geometry)) %>%
+  st_cast("POLYGON")
+
+#transform back to lat/lon
+study.site <- st_transform(df.5000, 4326) #CRS 4326 for this
+
+# 
+# ##read in study site polygon
+# study.site <- st_read(dsn = "C:/Users/englishm/Documents/EA/2026/2026 Eiggs Mountain NS/EiggsMountain.kml")
+# 
+# # #buffer by 5000m
+# # study.site <- st_buffer(study.site, dist = 5000)
+# 
+# study.site <- st_transform(study.site, 4326)
+# 
+# study.site <- st_zm(study.site, drop = T, what = "ZM")
 
 
 atl <- st_read(dsn = "C:/Users/englishm/Documents/EA/Data/Atlantic_Region.kml")
@@ -478,7 +478,7 @@ ns.ews <- ns.ews[ns.ews$Province == "NS",]
 
 ns.ews.obs <- read.csv("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/Eastern Waterfowl Survey/EWS Maritimes/Data/Processed Data/EWS_Maritimes_Observations_1990-2025.csv")
 
-ns.ews.filter <- ns.ews.obs[ns.ews.obs$PLOT == 65046,]
+ns.ews.filter <- ns.ews.obs[ns.ews.obs$PLOT == 65045,]
 
 unique(ns.ews.filter$SPECIES_E)
 
@@ -672,13 +672,13 @@ server <- function(input, output, session) {
   #               #group = "Dataset",
   #               popup = popupTable(sd, zcol = c("label", "region"), row.numbers = F, feature.id = F)) %>%
     
-    addPolygons(data = ch,
+    addPolygons(data = ch.atl,
                 color = "blue",
                 fillOpacity = 0.15,
                 opacity = 1,
                 weight = 1,
                 #group = "Dataset",
-                popup = popupTable(ch, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+                popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
 
 
     
