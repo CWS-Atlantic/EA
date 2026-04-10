@@ -55,8 +55,8 @@ require(readxl)
 #
 #Create polygon from coordinate centroid
 df <- data.frame(
-  lat =  45.550643,
-  lon = -61.661264
+  lat =  45.4724285,
+  lon = -62.2166617
 )
 
 
@@ -672,13 +672,13 @@ server <- function(input, output, session) {
   #               #group = "Dataset",
   #               popup = popupTable(sd, zcol = c("label", "region"), row.numbers = F, feature.id = F)) %>%
     
-    addPolygons(data = ch.atl,
+    addPolygons(data = ch,
                 color = "blue",
                 fillOpacity = 0.15,
                 opacity = 1,
                 weight = 1,
                 #group = "Dataset",
-                popup = popupTable(ch.atl, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+                popup = popupTable(ch, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
 
 
     
