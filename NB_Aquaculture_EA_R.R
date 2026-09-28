@@ -150,9 +150,12 @@ nb.ews <- nb.ews[nb.ews$Province == "NB",]
 
 nb.ews.obs <- read.csv("Q:/GW/EC1130MigBirds_OiseauxMig/ATL_CWS_Waterfowl/Eastern Waterfowl Survey/EWS Maritimes/Data/Processed Data/EWS_Maritimes_Observations_1990-2025.csv")
 
-nb.ews.filter <- nb.ews.obs[nb.ews.obs$PLOT %in% c(56071, 56079, 56080),]
 
-sort(unique(nb.ews.filter$SPECIES_E))
+##filter based on nearest plots?
+
+#nb.ews.filter <- nb.ews.obs[nb.ews.obs$PLOT %in% c(56071, 56079, 56080),]
+
+#sort(unique(nb.ews.filter$SPECIES_E))
 
 
 ##################
@@ -551,13 +554,13 @@ server <- function(input, output, session) {
                 #popup = popupTable(study.site, zcol = c(), row.numbers = F, feature.id = F)) %>%
     
 
-    addPolygons(data = ch,
-                color = "blue",
-                fillOpacity = 0.15,
-                opacity = 1,
-                weight = 1,
-                #group = "Dataset",
-                popup = popupTable(ch, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
+    # addPolygons(data = ch,
+    #             color = "blue",
+    #             fillOpacity = 0.15,
+    #             opacity = 1,
+    #             weight = 1,
+    #             #group = "Dataset",
+    #             popup = popupTable(ch, zcol = c("Name"), row.numbers = F, feature.id = F)) %>%
 
     # addPolygons(data = cw[cw$BLOC %in% cw.int$BLOC,],
     #             color = "grey",
@@ -648,8 +651,6 @@ server <- function(input, output, session) {
   
   
   #setup a reactive dataset that only looks at the data in the drawn polygon
-  #you can make the dataframe contain whatever you like.
-  
   
   selectedLocations <- reactive({
     req(edits()$finished)          #again, edits() is a reactive object, so it needs the closed parentheses
