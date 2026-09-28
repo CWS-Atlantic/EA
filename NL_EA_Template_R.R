@@ -42,36 +42,36 @@ require(DT)
 ##   load in Study Site area data   ##
 ######################################
 
-#Create polygon from coordinate centroid ##47°34'00.7"N, 52°41'15.7
-df <- data.frame(
-  lat = 47.5668611,
-  lon = -52.6876944
-)
-
-
-df.sf <- df %>%
-  st_as_sf(coords = c("lon", "lat"))%>%
-  st_set_crs(4326)
-
-df.utm <- st_transform(df.sf, 32622) #CRS 32622 for this
-
-#buffer by 5000m
-df.5000 <- st_buffer(df.utm, dist = 5000)
-
-#turn to polygon:
-df.5000 <- df.5000 %>%
-  summarise(geometry = st_combine(geometry)) %>%
-  st_cast("POLYGON")
-
-#transform back to lat/lon
-study.site <- st_transform(df.5000, 4326) #CRS 4326 for this
-
-
-# study.site <- st_read(dsn = "C:/Users/EnglishM/Documents/EA/2025/2025 FWMP NL/FWMP_2025_DS_Pts/FWMP_2025_DS_Pts.shp")
+# #Create polygon from coordinate centroid ##47°34'00.7"N, 52°41'15.7
+# df <- data.frame(
+#   lat = 47.5668611,
+#   lon = -52.6876944
+# )
 # 
-# study.site <- st_transform(study.site, 4326)
 # 
-# study.site <- st_zm(study.site, drop = T, what = "ZM")
+# df.sf <- df %>%
+#   st_as_sf(coords = c("lon", "lat"))%>%
+#   st_set_crs(4326)
+# 
+# df.utm <- st_transform(df.sf, 32622) #CRS 32622 for this
+# 
+# #buffer by 5000m
+# df.5000 <- st_buffer(df.utm, dist = 5000)
+# 
+# #turn to polygon:
+# df.5000 <- df.5000 %>%
+#   summarise(geometry = st_combine(geometry)) %>%
+#   st_cast("POLYGON")
+# 
+# #transform back to lat/lon
+# study.site <- st_transform(df.5000, 4326) #CRS 4326 for this
+
+##Read in Study Site for Port Aux Basques ferry terminal
+study.site <- st_read(dsn = "C:/Users/EnglishM/Documents/EA/2026/2026 PAB NL/CBCL_NavigationChannel.shp")
+
+study.site <- st_transform(study.site, 4326)
+
+study.site <- st_zm(study.site, drop = T, what = "ZM")
 
 
 #load in Atlantic Region shape
@@ -84,43 +84,43 @@ atl <- st_zm(atl, drop = T, what = "ZM")
 atl <- st_make_valid(atl)
 
 ########################
-##  Read in UTM Grid  ##
+##  Read in UTM Grid  ##     #not sure why this is here?
 ########################
 
-utm <- st_read("C:/Users/EnglishM/Documents/EWS/UTM.gdb")
-
-utm <- st_transform(utm, 4326)
-
-#add UTM zone to study.site
-study.site <- st_intersection(study.site, utm)
-
-#now buffer each site by 300m after being converted to UTM
-
-study.site.20 <- st_transform(study.site[study.site$ZONE == 20,], "+proj=utm +zone=20 +datum=WGS84") 
-
-study.site.21 <- st_transform(study.site[study.site$ZONE == 21,], "+proj=utm +zone=21 +datum=WGS84") 
-
-study.site.22 <- st_transform(study.site[study.site$ZONE == 22,], "+proj=utm +zone=22 +datum=WGS84") 
-
-#make the 300m buffer
-study.site.20 <- st_buffer(study.site.20, dist = 5000)
-
-study.site.21 <- st_buffer(study.site.21, dist = 5000)
-
-study.site.22 <- st_buffer(study.site.22, dist = 5000)
-
-#reproject to lat-lon
-study.site.20 <- st_transform(study.site.20, "+proj=longlat +datum=WGS84")
-
-study.site.21 <- st_transform(study.site.21, "+proj=longlat +datum=WGS84")
-
-study.site.22 <- st_transform(study.site.22, "+proj=longlat +datum=WGS84")
-
-#recreate df
-
-study.site <- rbind(study.site.20,
-                    study.site.21,
-                    study.site.22)
+# utm <- st_read("C:/Users/EnglishM/Documents/EWS/UTM.gdb")
+# 
+# utm <- st_transform(utm, 4326)
+# 
+# #add UTM zone to study.site
+# study.site <- st_intersection(study.site, utm)
+# 
+# #now buffer each site by 300m after being converted to UTM
+# 
+# study.site.20 <- st_transform(study.site[study.site$ZONE == 20,], "+proj=utm +zone=20 +datum=WGS84") 
+# 
+# study.site.21 <- st_transform(study.site[study.site$ZONE == 21,], "+proj=utm +zone=21 +datum=WGS84") 
+# 
+# study.site.22 <- st_transform(study.site[study.site$ZONE == 22,], "+proj=utm +zone=22 +datum=WGS84") 
+# 
+# #make the 300m buffer
+# study.site.20 <- st_buffer(study.site.20, dist = 5000)
+# 
+# study.site.21 <- st_buffer(study.site.21, dist = 5000)
+# 
+# study.site.22 <- st_buffer(study.site.22, dist = 5000)
+# 
+# #reproject to lat-lon
+# study.site.20 <- st_transform(study.site.20, "+proj=longlat +datum=WGS84")
+# 
+# study.site.21 <- st_transform(study.site.21, "+proj=longlat +datum=WGS84")
+# 
+# study.site.22 <- st_transform(study.site.22, "+proj=longlat +datum=WGS84")
+# 
+# #recreate df
+# 
+# study.site <- rbind(study.site.20,
+#                     study.site.21,
+#                     study.site.22)
 
 ##########################
 ### Seaduck Key Sites   ##
