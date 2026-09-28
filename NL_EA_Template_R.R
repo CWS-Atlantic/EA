@@ -155,7 +155,7 @@ cw.int <- st_intersection(cw, study.site)
 
 cw.data <- st_read(dsn = "Q:/GW/EC1140WH_Con_HF/ATL_CWS_MarineAreas/Waterfowl/Coastal Survey Blocks/Coastal_survey_blocks_maxcounts/CoastalBlockMaxCount_Gulf.shp")
 
-#subset out to blocks 121, 122 for St Marys Bay
+#subset out to blocks 
 
 cw.data <- filter(cw.data, BLOC %in% cw.int$BLOC)
 
